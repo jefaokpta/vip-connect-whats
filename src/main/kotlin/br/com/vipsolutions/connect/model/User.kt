@@ -3,6 +3,7 @@ package br.com.vipsolutions.connect.model
 import br.com.vipsolutions.connect.model.util.Profile
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
+import java.time.LocalDateTime
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -15,8 +16,10 @@ data class User(
     val fullName: String,
     val profile: Profile,
     val email: String,
-    val passwordHash: String,
+    var passwordHash: String,
+    val companyId: Int,
     val deleted: Boolean = false,
-    val companyId: Int
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    var updatedAt: LocalDateTime = LocalDateTime.now()
 ) {
 }
