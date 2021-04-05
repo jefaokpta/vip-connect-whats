@@ -1,0 +1,13 @@
+spring:
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/vip
+    username: jefao
+    password: jefao
+server:
+  error:
+    include-stacktrace: on_param
+logging:
+  level:
+    org:
+      springframework:
+          r2dbc: DEBUG
