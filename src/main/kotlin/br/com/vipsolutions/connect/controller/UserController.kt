@@ -26,19 +26,19 @@ class UserController(private val userRepository: UserRepository) {
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     fun save(@RequestBody user: User) = userRepository.save(user)
+        .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
 
     @PutMapping
     fun update(@RequestBody user: User) = userRepository.findById(user.id)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.")))
-        .flatMap { userDb ->
-            if(user.passwordHash.isBlank()) user.passwordHash = userDb.passwordHash
-            user.updatedAt = LocalDateTime.now()
-            userRepository.save(user)
-        }
+        .flatMap { userRepository.save(User(it, user)) }
+        .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
+        .flatMap{Mono.empty<Void>()}
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long) = userRepository.findById(id)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.")))
-        .flatMap { userRepository.deleteById(id) }
+        .flatMap{userRepository.save(it.apply { deleted = true })}
+        .flatMap{Mono.empty<Void>()}
 
 }
