@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.User
+import br.com.vipsolutions.connect.model.dto.UserDTO
 import br.com.vipsolutions.connect.repository.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -19,19 +20,21 @@ class UserController(private val userRepository: UserRepository) {
     @GetMapping // LIMITE 20
     fun getAll() = userRepository.findAll()
         .filter{!it.deleted}
+        .map(::UserDTO)
 
     @GetMapping("/{id}")
     fun getOne(@PathVariable id: Long) = userRepository.findById(id)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.")))
+        .map(::UserDTO)
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
-    fun save(@RequestBody user: User) = userRepository.save(user)
+    fun save(@RequestBody userDTO: UserDTO) = userRepository.save(User(userDTO))
         .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
 
     @PutMapping
-    fun update(@RequestBody user: User) = userRepository.findById(user.id)
+    fun update(@RequestBody userDTO: UserDTO) = userRepository.findById(userDTO.id)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.")))
-        .flatMap { userRepository.save(User(it, user)) }
+        .flatMap { userRepository.save(User(it, userDTO)) }
         .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
         .flatMap{Mono.empty<Void>()}
 
