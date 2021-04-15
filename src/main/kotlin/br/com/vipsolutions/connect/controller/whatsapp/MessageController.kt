@@ -30,7 +30,6 @@ class MessageController(
         val status = node["status"].intValue()
         val text = Optional.ofNullable(node.findValue("conversation"))
             .orElse(node.findValue("text"))
-        //println(node.findValue("conversation"))
 
 
         val whatsChat = WhatsChat(0, remoteJid, text.asText(), messageId, fromMe, status)
@@ -49,7 +48,6 @@ class MessageController(
 
     @GetMapping("/{remoteJid}")
     fun chats(@PathVariable remoteJid: String, @RequestParam("limit") limit: Int): Flux<WhatsChat> {
-        println(limit)
         return whatsChatRepository.findTop50ByRemoteJid(remoteJid)
     }
 }
