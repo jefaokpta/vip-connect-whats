@@ -1,6 +1,5 @@
-package br.com.vipsolutions.connect.model.dto
+package br.com.vipsolutions.connect.model
 
-import br.com.vipsolutions.connect.model.User
 import br.com.vipsolutions.connect.model.util.UserProfile
 
 /**

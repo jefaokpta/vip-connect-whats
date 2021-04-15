@@ -1,13 +1,12 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.User
-import br.com.vipsolutions.connect.model.dto.UserDTO
+import br.com.vipsolutions.connect.model.UserDTO
 import br.com.vipsolutions.connect.repository.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >

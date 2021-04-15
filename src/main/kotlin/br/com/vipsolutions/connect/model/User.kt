@@ -1,6 +1,5 @@
 package br.com.vipsolutions.connect.model
 
-import br.com.vipsolutions.connect.model.dto.UserDTO
 import br.com.vipsolutions.connect.model.util.UserProfile
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
