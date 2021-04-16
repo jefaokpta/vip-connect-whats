@@ -1,13 +1,13 @@
 version: "3"
 services:
   db-vip-whats:
-    image: mysql
+    image: mariadb:10
     environment:
       - MYSQL_ROOT_PASSWORD=jefao123
       - MYSQL_DATABASE=vip
       - MYSQL_USER=jefao
       - MYSQL_PASSWORD=jefao
     volumes:
-      - ../db-vip-whats/dbdata:/var/lib/mysql
+      - ./dbdata:/var/lib/mysql
     ports:
       - 3306:3306
