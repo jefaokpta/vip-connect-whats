@@ -32,11 +32,12 @@ class MessageController(
             .orElse(node.findValue("text"))
 
 
-        val whatsChat = WhatsChat(0, remoteJid, text.asText(), messageId, fromMe, status)
+        val whatsChat = WhatsChat(messageId, remoteJid, text.asText(), fromMe, status)
         return if(fromMe){
-            whatsChatRepository.findByMessageId(messageId)
+            whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
                     dbWhatsChat.status = whatsChat.status
+                    dbWhatsChat.isPersistable = false
                     whatsChatRepository.save(dbWhatsChat)
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
