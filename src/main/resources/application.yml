@@ -1,13 +1,12 @@
 
 spring:
   r2dbc:
-    url: r2dbc:mariadb://localhost:3306/vip
+    url: r2dbc:mariadb://db-vip-whats:3306/vip
     username: jefao
     password: jefao
 server:
   error:
     include-stacktrace: on_param
-  port: 80
 logging:
   level:
     org:

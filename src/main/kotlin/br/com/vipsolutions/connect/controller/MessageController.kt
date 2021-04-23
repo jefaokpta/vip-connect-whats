@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.controller.whatsapp
+package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
@@ -21,7 +21,7 @@ class MessageController(
 ) {
 
     @PostMapping @Transactional
-    fun received(@RequestBody payload: String): Mono<WhatsChat> {
+    fun received(@RequestBody payload: String) {
         println(payload)
         val node = ObjectMapper().readValue(payload, ObjectNode::class.java)
         val remoteJid = node["key"]["remoteJid"].textValue()
@@ -33,7 +33,7 @@ class MessageController(
 
 
         val whatsChat = WhatsChat(messageId, remoteJid, text.asText(), fromMe, status)
-        return if(fromMe){
+        if(fromMe){
             whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
                     dbWhatsChat.status = whatsChat.status
@@ -41,9 +41,10 @@ class MessageController(
                     whatsChatRepository.save(dbWhatsChat)
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
+                .subscribe()
         }
         else {
-            whatsChatRepository.save(whatsChat)
+            whatsChatRepository.save(whatsChat).subscribe()
         }
     }
 
