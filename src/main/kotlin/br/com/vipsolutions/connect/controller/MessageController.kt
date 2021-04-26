@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.WhatsChat
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -20,8 +21,12 @@ class MessageController(
     private val whatsChatRepository: WhatsChatRepository
 ) {
 
+    @PostMapping("/test")
+    fun sendingTextMessageToNode(@RequestBody json: String){
+        sendTextMessage(json)
+    }
     @PostMapping @Transactional
-    fun received(@RequestBody payload: String) {
+    fun received(@RequestBody payload: String): Mono<WhatsChat> {
         println(payload)
         val node = ObjectMapper().readValue(payload, ObjectNode::class.java)
         val remoteJid = node["key"]["remoteJid"].textValue()
@@ -33,7 +38,7 @@ class MessageController(
 
 
         val whatsChat = WhatsChat(messageId, remoteJid, text.asText(), fromMe, status)
-        if(fromMe){
+        return if(fromMe){
             whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
                     dbWhatsChat.status = whatsChat.status
@@ -41,15 +46,14 @@ class MessageController(
                     whatsChatRepository.save(dbWhatsChat)
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
-                .subscribe()
         }
         else {
-            whatsChatRepository.save(whatsChat).subscribe()
+            whatsChatRepository.save(whatsChat)
         }
     }
 
     @GetMapping("/{remoteJid}")
     fun chats(@PathVariable remoteJid: String, @RequestParam("limit") limit: Int): Flux<WhatsChat> {
-        return whatsChatRepository.findTop50ByRemoteJid(remoteJid)
+        return whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(remoteJid)
     }
 }

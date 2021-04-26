@@ -11,5 +11,5 @@ import reactor.core.publisher.Mono
  */
 interface WhatsChatRepository: ReactiveCrudRepository<WhatsChat, String> {
 
-    fun findTop50ByRemoteJid(remoteJid: String): Flux<WhatsChat>
+    fun findTop50ByRemoteJidOrderByDatetimeDesc(remoteJid: String): Flux<WhatsChat>
 }
