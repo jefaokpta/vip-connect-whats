@@ -3,7 +3,6 @@ package br.com.vipsolutions.connect.controller
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.transaction.annotation.Transactional

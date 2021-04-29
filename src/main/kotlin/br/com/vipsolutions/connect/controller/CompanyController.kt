@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
+import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.service.CompanyService
 import org.springframework.web.bind.annotation.*
 
@@ -9,7 +10,13 @@ import org.springframework.web.bind.annotation.*
  */
 @RestController
 @RequestMapping("/api/companies")
-class CompanyController(private val companyService: CompanyService) {
+class CompanyController(
+    private val companyService: CompanyService,
+    private val companyRepository: CompanyRepository
+) {
+
+    @GetMapping
+    fun list() = companyRepository.findAll()
 
     @PostMapping
     fun newCompany(@RequestBody company: Int) = companyService.createCompany(company)
@@ -22,4 +29,5 @@ class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping("/destroy/{id}")
     fun destroy(@PathVariable id: Long) = companyService.destroyCompany(id)
+
 }

@@ -2,7 +2,6 @@ package br.com.vipsolutions.connect.util
 
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.CompanyInfo
-import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -13,7 +12,7 @@ fun createInstance(company: Company): CompanyInfo {
     val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} --restart=on-failure node-whats:1.0"
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
-        .orElse(CompanyInfo(company, "Instancia Whats já estava UP"))
+        .orElse(CompanyInfo(company, "Container Whats já estava UP"))
 }
 
 fun stopInstance(company: Company): CompanyInfo {
@@ -34,5 +33,5 @@ fun destroyInstance(company: Company): CompanyInfo {
     val command = "docker rm -f whats-${company.id}"
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
-        .orElse(CompanyInfo(company, "Instancia Inexistente"))
+        .orElse(CompanyInfo(company, "Container Inexistente"))
 }
