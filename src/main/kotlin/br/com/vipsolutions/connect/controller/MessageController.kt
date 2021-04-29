@@ -5,6 +5,7 @@ import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
@@ -16,19 +17,19 @@ import java.util.*
  * Date: 2021-04-08
  */
 @RestController
-@RequestMapping("/whats/messages")
+@RequestMapping("/api/messages")
 class MessageController(
     private val whatsChatRepository: WhatsChatRepository
 ) {
 
     @PostMapping("/test")
     fun sendingTextMessageToNode(@RequestBody json: String){
-        sendTextMessage(json)
+        sendTextMessage(json, 3001)
     }
     @PostMapping @Transactional
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
         println(payload)
-        val node = ObjectMapper().readValue(payload, ObjectNode::class.java)
+        val node = jacksonObjectMapper().readValue(payload, ObjectNode::class.java)
         val remoteJid = node["key"]["remoteJid"].textValue()
         val messageId = node["key"]["id"].textValue()
         val fromMe = node["key"]["fromMe"].booleanValue()

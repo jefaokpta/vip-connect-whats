@@ -17,7 +17,7 @@ class WebsocketConfig {
     @Bean
     fun handlerMapping(): HandlerMapping? {
         val map: MutableMap<String, WebSocketHandler?> = HashMap()
-        map["/websocket/chats"] = WsChatHandler()
+        map["/ws/chats"] = WsChatHandler()
         val mapping = SimpleUrlHandlerMapping()
         mapping.urlMap = map
         mapping.order = Ordered.HIGHEST_PRECEDENCE

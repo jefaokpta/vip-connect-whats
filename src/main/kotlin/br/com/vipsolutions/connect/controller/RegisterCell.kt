@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
  * Date: 2021-04-23
  */
 @RestController
-@RequestMapping("/whats/register")
+@RequestMapping("/api/register")
 class RegisterCell {
 
     @PostMapping

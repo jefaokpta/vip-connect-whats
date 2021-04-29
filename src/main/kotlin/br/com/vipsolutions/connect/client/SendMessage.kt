@@ -10,8 +10,8 @@ import java.net.http.HttpResponse
  * Date: 2021-04-26
  */
 
-fun sendTextMessage(data: String){
-    val request = HttpRequest.newBuilder(URI("http://localhost:3000/whats/messages"))
+fun sendTextMessage(data: String, instance: Int){
+    val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(data))
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header("Content-Type", "application/json")

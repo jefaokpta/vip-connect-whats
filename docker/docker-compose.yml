@@ -1,11 +1,11 @@
 version: "3"
 services:
-  api:
-    build: .
-    ports:
-      - 8080:8080
-    networks:
-      - whats-network
+#  api:
+#    build: .
+#    ports:
+#      - 8080:8080
+#    networks:
+#      - whats-network
   db-vip-whats:
     image: mariadb:10
     environment:
@@ -17,8 +17,8 @@ services:
       - ./dbdata:/var/lib/mysql
     ports:
       - 3306:3306
-    networks:
-      - whats-network
+#    networks:
+#      - whats-network
 
-networks:
-  whats-network:
+#networks:
+#  whats-network:
