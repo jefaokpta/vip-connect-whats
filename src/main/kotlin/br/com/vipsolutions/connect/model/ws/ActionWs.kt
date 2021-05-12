@@ -6,7 +6,7 @@ package br.com.vipsolutions.connect.model.ws
  */
 class ActionWs(
     val action: String,
-    val company: Int
+    val company: Long
 
 ) {
 }

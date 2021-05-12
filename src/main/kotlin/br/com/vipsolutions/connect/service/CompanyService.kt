@@ -22,22 +22,22 @@ class CompanyService(private val companyRepository: CompanyRepository) {
 
     fun createCompany(company: Int) = verifyCompanyExists(company)
         .flatMap (this::activateInstance)
-        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
+        //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
 
     fun stopCompany(id: Long) = companyRepository.findById(id)
         .flatMap { companyRepository.save(it.apply { isStopped = true }) }
         .map(::stopInstance)
-        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
+        //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
 
     fun startCompany(id: Long) = companyRepository.findById(id)
         .flatMap { companyRepository.save(it.apply { isStopped = false }) }
         .map(::startInstance)
-        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
+        //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
 
     fun destroyCompany(id: Long) = companyRepository.findById(id)
         .flatMap { companyRepository.save(it.apply { isActive = false }) }
         .map(::destroyInstance)
-        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
+        //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
 
 
     private fun activateInstance(company: Company) =
