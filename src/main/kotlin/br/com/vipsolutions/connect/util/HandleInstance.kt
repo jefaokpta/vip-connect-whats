@@ -9,7 +9,7 @@ import br.com.vipsolutions.connect.model.CompanyInfo
  */
 
 fun createInstance(company: Company): CompanyInfo {
-    val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} --restart=on-failure node-whats:1.0"
+    val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} --restart=on-failure jefaokpta/node-whats:1.0"
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
         .orElse(CompanyInfo(company, "Container Whats já estava UP"))

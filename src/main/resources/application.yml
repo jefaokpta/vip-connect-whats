@@ -1,7 +1,7 @@
 
 spring:
   r2dbc:
-    url: r2dbc:mariadb://192.168.15.152:3306/vip
+    url: r2dbc:mariadb://localhost:3306/vip
     username: jefao
     password: jefao
 server:
