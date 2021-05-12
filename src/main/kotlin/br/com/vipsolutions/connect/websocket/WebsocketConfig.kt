@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.websocket
 
+import br.com.vipsolutions.connect.service.CompanyService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
@@ -12,12 +13,13 @@ import org.springframework.web.reactive.socket.server.support.WebSocketHandlerAd
 import org.springframework.web.reactive.socket.server.upgrade.ReactorNettyRequestUpgradeStrategy
 
 @Configuration
-class WebsocketConfig {
+class WebsocketConfig(private val companyService: CompanyService) {
 
     @Bean
     fun handlerMapping(): HandlerMapping? {
         val map: MutableMap<String, WebSocketHandler?> = HashMap()
         map["/ws/chats"] = WsChatHandler()
+        map["/ws/register"] = WsRegisterHandler(companyService)
         val mapping = SimpleUrlHandlerMapping()
         mapping.urlMap = map
         mapping.order = Ordered.HIGHEST_PRECEDENCE

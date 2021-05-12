@@ -8,16 +8,16 @@ class CompanyInfo(
     val id: Long,
     val company: Int,
     val instance: Int,
+    val message: String,
     val isActive: Boolean = false,
-    val isStopped: Boolean = false,
-    val message: String
+    val isStopped: Boolean = false
 ) {
     constructor(company: Company, message: String): this(
         company.id,
         company.company,
         company.instance,
+        message,
         company.isActive,
-        company.isStopped,
-        message
+        company.isStopped
     )
 }
