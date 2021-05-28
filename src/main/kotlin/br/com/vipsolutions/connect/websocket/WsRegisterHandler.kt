@@ -28,15 +28,22 @@ class WsRegisterHandler(private val companyService: CompanyService) : WebSocketH
     private fun handleActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage> {
         val action = Gson().fromJson(webSocketMessage.payloadAsText, ActionWs::class.java)
         return when (action.action) {
+            "INFO" -> companyService.infoCompany(action.controlNumber)
+                .map { webSocketSession.textMessage(objectToJson(it)) }
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(CompanyInfo(0, 0, 0, "Empresa invalida")))))
+
             "REGISTER" -> companyService.createCompany(action.controlNumber)
                 .map { RegisterCompanyCenter.companies[it.id] = webSocketSession; it }
                 .map { webSocketSession.textMessage(objectToJson(it)) }
+
             "STOP" -> companyService.stopCompany(action.instanceId)
                 .map { webSocketSession.textMessage(objectToJson(it)) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(CompanyInfo(0, 0, 0, "Empresa invalida")))))
+
             "START" -> companyService.startCompany(action.instanceId)
                 .map { webSocketSession.textMessage(objectToJson(it)) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(CompanyInfo(0, 0, 0, "Empresa invalida")))))
+
             "DESTROY" -> companyService.destroyCompany(action.instanceId)
                 .map { webSocketSession.textMessage(objectToJson(it)) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(CompanyInfo(0, 0, 0, "Empresa invalida")))))

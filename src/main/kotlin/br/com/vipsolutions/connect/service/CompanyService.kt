@@ -20,6 +20,8 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 @Service
 class CompanyService(private val companyRepository: CompanyRepository) {
 
+    fun infoCompany(company: Int) = companyRepository.findByCompany(company)
+
     fun createCompany(company: Int) = verifyCompanyExists(company)
         .flatMap (this::activateInstance)
         //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
