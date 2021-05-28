@@ -1,16 +1,10 @@
 package br.com.vipsolutions.connect.websocket
 
-import br.com.vipsolutions.connect.controller.RegisterCell
-import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.CompanyInfo
 import br.com.vipsolutions.connect.model.ws.ActionWs
-import br.com.vipsolutions.connect.model.ws.qrCode
 import br.com.vipsolutions.connect.service.CompanyService
 import br.com.vipsolutions.connect.util.RegisterCompanyCenter
 import br.com.vipsolutions.connect.util.objectToJson
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler

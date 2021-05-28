@@ -7,6 +7,7 @@ package br.com.vipsolutions.connect.model.ws
 class ActionWs(
     val action: String,
     val controlNumber: Int,
-    val instanceId: Long
+    val instanceId: Long,
+    val qrCode: QrCode?
 ) {
 }
