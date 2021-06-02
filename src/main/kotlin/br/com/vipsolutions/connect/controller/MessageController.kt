@@ -5,6 +5,8 @@ import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
@@ -25,9 +27,11 @@ class MessageController(
     fun sendingTextMessageToNode(@RequestBody json: String){
         sendTextMessage(json, 3001)
     }
-    @PostMapping @Transactional
+    @PostMapping //@Transactional
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
         println(payload)
+        val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
+        println(jsonObject.getAsJsonObject("key")["remoteJid"].asString + "CARAIO")
         val node = jacksonObjectMapper().readValue(payload, ObjectNode::class.java)
         val remoteJid = node["key"]["remoteJid"].textValue()
         val messageId = node["key"]["id"].textValue()

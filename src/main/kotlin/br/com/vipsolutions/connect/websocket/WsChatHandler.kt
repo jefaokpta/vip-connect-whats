@@ -30,18 +30,5 @@ class WsChatHandler : WebSocketHandler {
         return webSocketMessage.payloadAsText
     }
 
-//    fun sendMessage(agent: Int, message: Message) {
-//        SessionCentral.sessions[agent].let {
-//            it ?: return
-//            println("mensagem para $agent ")
-//            it.send(Mono.just(it.textMessage(messageToJson(message)))).subscribe()
-//        }
-//    }
-
-//    fun sendMessageToAll(msg: String) {
-//        SessionCentral.sessions.forEach { session ->
-//            session.send(Mono.just(session.textMessage(msg))).subscribe()
-//        }
-//    }
 
 }

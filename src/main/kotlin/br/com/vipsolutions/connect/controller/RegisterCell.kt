@@ -17,11 +17,11 @@ class RegisterCell {
 
     @PostMapping
     fun receiveQrCode(@RequestBody qrCode: QrCode) = Mono.justOrEmpty(RegisterCompanyCenter.companies[qrCode.id])
-        .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("QRCODE", 0, 0, qrCode))))) }
+        .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("QRCODE", 0, qrCode.id, qrCode, null))))) }
 
     @GetMapping("/{id}")
     fun confirmedQrCode(@PathVariable id: Long) = Mono.justOrEmpty(RegisterCompanyCenter.companies[id])
-        .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, 0, null))))) }
+        .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, id, null, null))))) }
         .doFirst { println("CONFIRMADO ID $id") }
 
 
