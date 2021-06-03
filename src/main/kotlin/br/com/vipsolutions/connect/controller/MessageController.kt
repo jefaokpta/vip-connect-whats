@@ -2,7 +2,10 @@ package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.client.sendTextMessage
+import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
+import br.com.vipsolutions.connect.util.ContactCenter
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
@@ -20,7 +23,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/messages")
 class MessageController(
-    private val whatsChatRepository: WhatsChatRepository
+    private val whatsChatRepository: WhatsChatRepository,
+    private val contactRepository: ContactRepository
 ) {
 
     @PostMapping("/test")
@@ -31,17 +35,17 @@ class MessageController(
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
         println(payload)
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
-        println(jsonObject.getAsJsonObject("key")["remoteJid"].asString + "CARAIO")
-        val node = jacksonObjectMapper().readValue(payload, ObjectNode::class.java)
-        val remoteJid = node["key"]["remoteJid"].textValue()
-        val messageId = node["key"]["id"].textValue()
-        val fromMe = node["key"]["fromMe"].booleanValue()
-        val status = node["status"].intValue()
-        val text = Optional.ofNullable(node.findValue("conversation"))
-            .orElse(node.findValue("text"))
+        val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
+        val messageId = jsonObject.getAsJsonObject("key")["id"].asString
+        val fromMe = jsonObject.getAsJsonObject("key")["fromMe"].asBoolean
+        val status = jsonObject["status"].asInt
+        val company = jsonObject["company"].asLong
 
+        jsonObject.addProperty("error", "Erro: Não encontrado texto ou conversa.")
+        val text = jsonObject.getAsJsonObject("message")["conversation"]?:
+            jsonObject.getAsJsonObject("message")["text"]?: jsonObject["error"]
 
-        val whatsChat = WhatsChat(messageId, remoteJid, text.asText(), fromMe, status)
+        val whatsChat = WhatsChat(messageId, remoteJid, text.asString, fromMe, status)
         return if(fromMe){
             whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
@@ -52,7 +56,20 @@ class MessageController(
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
         }
         else {
-            whatsChatRepository.save(whatsChat)
+            contactRepository.findByWhatsapp(remoteJid)
+                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company)))
+                .map { addContactCenter(company, it) }
+                .flatMap { whatsChatRepository.save(whatsChat) }
+
+        }
+    }
+
+    private fun addContactCenter(company: Long, contact: Contact) {
+       if (ContactCenter.contacts.containsKey(company)){
+           ContactCenter.contacts[company]?.set(contact.id, contact)
+        }
+        else{
+            ContactCenter.contacts[company] = mutableMapOf(contact.id to contact)
         }
     }
 

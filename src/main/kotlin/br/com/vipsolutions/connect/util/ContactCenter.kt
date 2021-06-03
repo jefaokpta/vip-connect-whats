@@ -8,6 +8,6 @@ import br.com.vipsolutions.connect.model.Contact
  */
 class ContactCenter {
     companion object{
-        val contacts = mutableMapOf<Long, MutableList<Contact>>()
+        val contacts = mutableMapOf<Long, MutableMap<Long, Contact>>()
     }
 }

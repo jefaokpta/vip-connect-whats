@@ -15,19 +15,19 @@ class CompanyController(
     private val companyRepository: CompanyRepository
 ) {
 
-    @GetMapping
-    fun list() = companyRepository.findAll()
-
-    @PostMapping
-    fun newCompany(@RequestBody company: Int) = companyService.createCompany(company)
-
-    @GetMapping("/stop/{id}")
-    fun stop(@PathVariable id: Long) = companyService.stopCompany(id)
-
-    @GetMapping("/start/{id}")
-    fun start(@PathVariable id: Long) = companyService.startCompany(id)
-
-    @GetMapping("/destroy/{id}")
-    fun destroy(@PathVariable id: Long) = companyService.destroyCompany(id)
+//    @GetMapping
+//    fun list() = companyRepository.findAll()
+//
+//    @PostMapping
+//    fun newCompany(@RequestBody company: Int) = companyService.createCompany(company)
+//
+//    @GetMapping("/stop/{id}")
+//    fun stop(@PathVariable id: Long) = companyService.stopCompany(id)
+//
+//    @GetMapping("/start/{id}")
+//    fun start(@PathVariable id: Long) = companyService.startCompany(id)
+//
+//    @GetMapping("/destroy/{id}")
+//    fun destroy(@PathVariable id: Long) = companyService.destroyCompany(id)
 
 }
