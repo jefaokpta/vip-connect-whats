@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.util
 
-import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ws.MessageCount
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -8,6 +8,6 @@ import br.com.vipsolutions.connect.model.Contact
  */
 class ContactCenter {
     companion object{
-        val contacts = mutableMapOf<Long, MutableMap<Long, Contact>>()
+        val contacts = mutableMapOf<Long, MutableMap<Long, MessageCount>>()
     }
 }

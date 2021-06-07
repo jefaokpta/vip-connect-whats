@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.model
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
 
 /**
@@ -13,6 +14,12 @@ data class Contact(
     val id: Long,
     val name: String?,
     val whatsapp: String,
-    val company: Long
+    val company: Long,
 ) {
+    @Transient
+    val busy = false
+    @Transient
+    var newMessage = false
+    @Transient
+    var newMessageQtde = 0
 }

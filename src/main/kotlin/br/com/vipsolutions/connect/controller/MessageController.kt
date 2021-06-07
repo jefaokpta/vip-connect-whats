@@ -3,6 +3,7 @@ package br.com.vipsolutions.connect.controller
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ws.MessageCount
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.util.ContactCenter
@@ -65,11 +66,16 @@ class MessageController(
     }
 
     private fun addContactCenter(company: Long, contact: Contact) {
-       if (ContactCenter.contacts.containsKey(company)){
-           ContactCenter.contacts[company]?.set(contact.id, contact)
+       if(ContactCenter.contacts.contains(company)){
+           if(ContactCenter.contacts[company]!!.contains(contact.id)){
+               ContactCenter.contacts[company]!![contact.id]!!.message++
+           }
+           else{
+               ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
+           }
         }
         else{
-            ContactCenter.contacts[company] = mutableMapOf(contact.id to contact)
+            ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
         }
     }
 
