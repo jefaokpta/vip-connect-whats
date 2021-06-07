@@ -5,6 +5,6 @@ import org.springframework.web.reactive.socket.WebSocketSession
 class SessionCentral {
 
     companion object {
-        val sessions = mutableMapOf<String, WebSocketSession>()
+        val agents = mutableMapOf<Long, MutableMap<Int, WebSocketSession>>()
     }
 }

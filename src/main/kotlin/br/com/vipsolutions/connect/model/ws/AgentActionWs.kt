@@ -10,6 +10,7 @@ class AgentActionWs(
     val action: String,
     val agent: Int,
     val company: Int,
-    var contacts: List<Contact>?
+    var contacts: List<Contact>?,
+    var contact: Contact?
 ) {
 }

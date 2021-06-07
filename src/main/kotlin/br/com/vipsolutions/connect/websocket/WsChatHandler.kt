@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.websocket
 
+import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.ws.ActionWs
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
@@ -27,17 +28,28 @@ class WsChatHandler(
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
-        val action = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
+        val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
 
-        return when(action.action){
-            "ONLINE" -> companyRepository.findByCompany(action.company)
+        return when(agentActionWs.action){
+            "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
+                .map { addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { contactRepository.findAllByCompany(it.id) }
                 .map (this::contactsHaveNewMessages)
                 .flatMap { it.collectList() }
-                .map { webSocketSession.textMessage(objectToJson(action.apply { contacts = it })) }
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson("teste")))
         }
+    }
+
+    private fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
+        if (SessionCentral.agents.contains(company.id)){
+            SessionCentral.agents[company.id]!![actionWs.agent] = webSocketSession
+        }
+        else{
+            SessionCentral.agents[company.id] = mutableMapOf(actionWs.agent to webSocketSession)
+        }
+        return company
     }
 
     private fun contactsHaveNewMessages(contacts: Flux<Contact>) = contacts

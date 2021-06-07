@@ -3,6 +3,7 @@ package br.com.vipsolutions.connect.controller
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.util.ContactCenter
+import br.com.vipsolutions.connect.websocket.SessionCentral
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -16,9 +17,14 @@ import reactor.core.publisher.Mono
 @RequestMapping("/api/contacts")
 class ContactController(private val contactRepository: ContactRepository) {
 
-    @GetMapping("/memory/{company}")
+    @GetMapping("/memory/company/{company}")
     fun listMemoryContacts(@PathVariable company: Long) = Mono.justOrEmpty(ContactCenter.contacts[company])
         .map { it.values.toList() }
+        .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "lista não encontrado.")))
+
+    @GetMapping("/memory/agent/{company}")
+    fun listMemoryAgentSessions(@PathVariable company: Long) = Mono.justOrEmpty(SessionCentral.agents[company])
+        .map { it.keys.toList() }
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "lista não encontrado.")))
 
 //    @GetMapping
