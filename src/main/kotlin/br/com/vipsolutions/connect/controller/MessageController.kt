@@ -38,7 +38,7 @@ class MessageController(
     }
     @PostMapping //@Transactional
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
-        println(payload)
+        //println(payload)
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
@@ -76,27 +76,25 @@ class MessageController(
         .subscribe()
 
     private fun addContactCenter(company: Long, contact: Contact): Contact {
-       if(ContactCenter.contacts.contains(company)){
-           if(ContactCenter.contacts[company]!!.contains(contact.id)){
+        if(ContactCenter.contacts.contains(company)){
+            if(ContactCenter.contacts[company]!!.contains(contact.id)){
                val messageCount = ContactCenter.contacts[company]!![contact.id]!!
                messageCount.message = messageCount.message + 1
                contact.newMessageQtde = messageCount.message
                contact.newMessage = true
-               return contact
-           }
-           else{
-               ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
-               contact.newMessageQtde = 1
-               contact.newMessage = true
-               return contact
-           }
+            }
+            else{
+                contact.newMessageQtde = 1
+                contact.newMessage = true
+                ContactCenter.contacts[company]!![contact.id] = MessageCount(contact.id)
+            }
         }
         else{
             ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
-           contact.newMessageQtde = 1
-           contact.newMessage = true
-           return contact
+            contact.newMessageQtde = 1
+            contact.newMessage = true
         }
+        return contact
     }
 
     @GetMapping("/{remoteJid}")
