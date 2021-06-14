@@ -38,6 +38,11 @@ class WsChatHandler(
                 .flatMap { it.collectList() }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
+            "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
+                .flatMap { contactRepository.save(it) }
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null)))))
+
             else -> Mono.just(webSocketSession.textMessage(objectToJson("teste")))
         }
     }
