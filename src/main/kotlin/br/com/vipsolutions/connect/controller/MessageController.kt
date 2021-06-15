@@ -19,6 +19,11 @@ import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.*
 
 /**
@@ -43,14 +48,18 @@ class MessageController(
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
         val fromMe = jsonObject.getAsJsonObject("key")["fromMe"].asBoolean
+        val timestamp = jsonObject.getAsJsonObject("messageTimestamp")["low"].asLong
         val status = jsonObject["status"].asInt
         val company = jsonObject["company"].asLong
+
+        val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
+        //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
         jsonObject.addProperty("error", "Erro: Não encontrado texto ou conversa.")
         val text = jsonObject.getAsJsonObject("message")["conversation"]?:
             jsonObject.getAsJsonObject("message")["text"]?: jsonObject["error"]
 
-        val whatsChat = WhatsChat(messageId, remoteJid, text.asString, fromMe, status)
+        val whatsChat = WhatsChat(messageId, remoteJid, text.asString, fromMe, status, datetime)
         return if(fromMe){
             whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
@@ -70,9 +79,10 @@ class MessageController(
         }
     }
 
-    private fun alertNewMessageToAgents(contact: Contact) = Flux.fromIterable(SessionCentral.agents[contact.company]!!.values)
+    private fun alertNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
+        .map { Flux.fromIterable(it.values) }
+        .orElse(Flux.empty())
         .flatMap {it.send(Mono.just(it.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact))))) }
-        .onErrorContinue { t, u -> println("Agente se foi: ${t.message}") }
         .subscribe()
 
     private fun addContactCenter(company: Long, contact: Contact): Contact {
