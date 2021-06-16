@@ -1,12 +1,11 @@
 package br.com.vipsolutions.connect.websocket
 
-import br.com.vipsolutions.connect.model.Company
-import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.ws.ActionWs
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
+import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.util.ContactCenter
+import br.com.vipsolutions.connect.util.contactsHaveNewMessages
 import br.com.vipsolutions.connect.util.objectToJson
 import com.google.gson.Gson
 import org.springframework.stereotype.Service
@@ -20,7 +19,8 @@ import java.util.*
 @Service
 class WsChatHandler(
     private val contactRepository: ContactRepository,
-    private val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository,
+    private val whatsChatRepository: WhatsChatRepository
 ) : WebSocketHandler {
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
@@ -34,39 +34,31 @@ class WsChatHandler(
             "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { contactRepository.findAllByCompany(it.id) }
-                .map (this::contactsHaveNewMessages)
+                .map (::contactsHaveNewMessages)
                 .flatMap { it.collectList() }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
-                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null)))))
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null, null, null)))))
 
-            else -> Mono.just(webSocketSession.textMessage(objectToJson("teste")))
-        }
-    }
+            "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
+                .map { whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(it.whatsapp) }
+                .orElse(Flux.empty())
+                .collectList()
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
+                .doFinally {
+                    Optional.ofNullable(agentActionWs.contact)
+                        .map {
+                            ContactCenter.contacts[it.company]?.remove(it.id)
+                            clearNewMessageToAgents(it)
+                        }
 
-    private fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
-        if (SessionCentral.agents.contains(company.id)){
-            SessionCentral.agents[company.id]!![actionWs.agent] = webSocketSession
-        }
-        else{
-            SessionCentral.agents[company.id] = mutableMapOf(actionWs.agent to webSocketSession)
-        }
-        return company
-    }
-
-    private fun contactsHaveNewMessages(contacts: Flux<Contact>) = contacts
-        .map { contact ->
-            Optional.ofNullable(ContactCenter.contacts[contact.company])
-                .map {
-                    if (it.containsKey(contact.id)){
-                        contact.newMessage = true
-                        contact.newMessageQtde = it[contact.id]!!.message
-                    }
                 }
-            contact
+
+            else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "Açao Desconhecida." })))
         }
+    }
 
 }

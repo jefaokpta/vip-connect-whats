@@ -1,29 +1,23 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
-import br.com.vipsolutions.connect.model.ws.MessageCount
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
-import br.com.vipsolutions.connect.util.ContactCenter
+import br.com.vipsolutions.connect.util.addContactCenter
 import br.com.vipsolutions.connect.util.objectToJson
 import br.com.vipsolutions.connect.websocket.SessionCentral
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
-import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.*
 
 /**
@@ -74,37 +68,9 @@ class MessageController(
             contactRepository.findByWhatsapp(remoteJid)
                 .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company)))
                 .map { addContactCenter(company, it) }
-                .map ( this::alertNewMessageToAgents )
+                .map ( ::alertNewMessageToAgents )
                 .flatMap { whatsChatRepository.save(whatsChat) }
         }
-    }
-
-    private fun alertNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
-        .map { Flux.fromIterable(it.values) }
-        .orElse(Flux.empty())
-        .flatMap {it.send(Mono.just(it.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact))))) }
-        .subscribe()
-
-    private fun addContactCenter(company: Long, contact: Contact): Contact {
-        if(ContactCenter.contacts.contains(company)){
-            if(ContactCenter.contacts[company]!!.contains(contact.id)){
-               val messageCount = ContactCenter.contacts[company]!![contact.id]!!
-               messageCount.message = messageCount.message + 1
-               contact.newMessageQtde = messageCount.message
-               contact.newMessage = true
-            }
-            else{
-                contact.newMessageQtde = 1
-                contact.newMessage = true
-                ContactCenter.contacts[company]!![contact.id] = MessageCount(contact.id)
-            }
-        }
-        else{
-            ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
-            contact.newMessageQtde = 1
-            contact.newMessage = true
-        }
-        return contact
     }
 
     @GetMapping("/{remoteJid}")

@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.model.ws
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.WhatsChat
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -11,6 +12,8 @@ class AgentActionWs(
     val agent: Int,
     val company: Int,
     var contacts: List<Contact>?,
-    var contact: Contact?
+    var contact: Contact?,
+    var messages: List<WhatsChat>?,
+    var errorMessage: String?
 ) {
 }
