@@ -26,11 +26,22 @@ fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession:
     return company
 }
 
+fun removeAgentSession(session: WebSocketSession){
+    SessionCentral.agents.forEach{companyMap ->
+        companyMap.value.forEach{sessionMap ->
+            if (session == sessionMap.value){
+                companyMap.value.remove(sessionMap.key)
+                println("removido agente chave ${sessionMap.key} do mapa id ${companyMap.key}")
+            }
+        }
+    }
+}
+
 fun alertNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
     .map { Flux.fromIterable(it.values) }
     .orElse(Flux.empty())
     .flatMap {it.send(Mono.just(it.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null))))) }
-    .subscribe() // preciso dar um jeito de apagar o agente qnd desconectar do ws
+    .subscribe()
 
 fun clearNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
     .map { Flux.fromIterable(it.values) }

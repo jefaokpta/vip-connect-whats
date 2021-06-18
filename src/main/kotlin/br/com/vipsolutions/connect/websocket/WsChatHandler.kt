@@ -25,6 +25,7 @@ class WsChatHandler(
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
         .flatMap { handleAgentActions(it, session) }
+        .doFinally { removeAgentSession(session)}
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
