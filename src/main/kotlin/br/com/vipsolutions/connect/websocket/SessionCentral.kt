@@ -8,6 +8,7 @@ import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
+import kotlin.collections.HashMap
 
 class SessionCentral {
 
@@ -27,14 +28,17 @@ fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession:
 }
 
 fun removeAgentSession(session: WebSocketSession){
-    SessionCentral.agents.forEach{companyMap ->
+    val agentsMap = HashMap(SessionCentral.agents)
+    agentsMap.forEach{companyMap ->
         companyMap.value.forEach{sessionMap ->
             if (session == sessionMap.value){
-                companyMap.value.remove(sessionMap.key)
+                //companyMap.value.remove(sessionMap.key)
+                SessionCentral.agents[companyMap.key]?.remove(sessionMap.key)
                 println("removido agente chave ${sessionMap.key} do mapa id ${companyMap.key}")
             }
         }
     }
+    agentsMap.clear()
 }
 
 fun alertNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
