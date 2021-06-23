@@ -16,10 +16,18 @@ data class Contact(
     val whatsapp: String,
     val company: Long,
 ) {
+    constructor(contact: Contact): this(
+        contact.id,
+        contact.name,
+        contact.whatsapp,
+        contact.company
+    )
     @Transient
     val busy = false
     @Transient
     var newMessage = false
     @Transient
     var newMessageQtde = 0
+    @Transient
+    var locked = false
 }

@@ -53,9 +53,10 @@ class WsChatHandler(
                     Optional.ofNullable(agentActionWs.contact)
                         .map {
                             ContactCenter.contacts[it.company]?.remove(it.id)
-                            clearNewMessageToAgents(it)
+                            clearNewMessageToAgents(it).subscribe()
+                            unlockContact(it, agentActionWs.agent).subscribe()
+                            lockContact(it, agentActionWs.agent).subscribe()
                         }
-
                 }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "Açao Desconhecida." })))
