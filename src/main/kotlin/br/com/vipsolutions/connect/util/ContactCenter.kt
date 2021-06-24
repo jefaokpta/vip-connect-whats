@@ -17,23 +17,25 @@ class ContactCenter {
 }
 
 fun addContactCenter(company: Long, contact: Contact): Contact {
-    if(ContactCenter.contacts.contains(company)){
-        if(ContactCenter.contacts[company]!!.contains(contact.id)){
-            val messageCount = ContactCenter.contacts[company]!![contact.id]!!
-            messageCount.message = messageCount.message + 1
-            contact.newMessageQtde = messageCount.message
-            contact.newMessage = true
+    if (!contact.busy){
+        if(ContactCenter.contacts.contains(company)){
+            if(ContactCenter.contacts[company]!!.contains(contact.id)){
+                val messageCount = ContactCenter.contacts[company]!![contact.id]!!
+                messageCount.message = messageCount.message + 1
+                contact.newMessageQtde = messageCount.message
+                contact.newMessage = true
+            }
+            else{
+                contact.newMessageQtde = 1
+                contact.newMessage = true
+                ContactCenter.contacts[company]!![contact.id] = MessageCount(contact.id)
+            }
         }
         else{
+            ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
             contact.newMessageQtde = 1
             contact.newMessage = true
-            ContactCenter.contacts[company]!![contact.id] = MessageCount(contact.id)
         }
-    }
-    else{
-        ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
-        contact.newMessageQtde = 1
-        contact.newMessage = true
     }
     return contact
 }

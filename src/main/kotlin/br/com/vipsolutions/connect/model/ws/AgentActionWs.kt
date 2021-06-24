@@ -14,6 +14,7 @@ class AgentActionWs(
     var contacts: List<Contact>?,
     var contact: Contact?,
     var messages: List<WhatsChat>?,
+    var message: WhatsChat?,
     var errorMessage: String?
 ) {
 }

@@ -42,7 +42,7 @@ class WsChatHandler(
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
-                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null, null, null)))))
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null, null, null, null)))))
 
             "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
                 .map { whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(it.whatsapp) }

@@ -23,7 +23,7 @@ data class Contact(
         contact.company
     )
     @Transient
-    val busy = false
+    var busy = false
     @Transient
     var newMessage = false
     @Transient

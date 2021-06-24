@@ -2,10 +2,12 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.model.ws.AgentSession
 import br.com.vipsolutions.connect.util.objectToJson
 import org.springframework.web.reactive.socket.WebSocketSession
+import reactor.core.Disposable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
@@ -51,6 +53,7 @@ private fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNul
         null,
         contact,
         null,
+        null,
         null
     ))))) }
 
@@ -78,9 +81,28 @@ fun removeAgentSession(session: WebSocketSession){
     agentsMap.clear()
 }
 
-fun alertNewMessageToAgents(contact: Contact) = Optional.ofNullable(SessionCentral.agents[contact.company])
-    .map { Flux.fromIterable(it.values) }
-    .orElse(Flux.empty())
-    .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null))))) }
-    .subscribe()
+fun contactOnAttendance(contact: Contact, whatsChat: WhatsChat): Contact {
+    val agents = SessionCentral.agents[contact.company]?: return contact
+    agents.forEach { agent ->
+        if (agent.value.contact !== null){
+            if (agent.value.contact!!.id == contact.id){
+                contact.busy = true
+                agent.value.session.send(Mono.just(agent.value.session.textMessage(objectToJson(AgentActionWs("MESSAGE_IN_ATTENDANCE", 0, 0, null, contact, null, whatsChat, null)))))
+                    .subscribe()
+            }
+        }
+    }
+    return contact
+}
+
+fun alertNewMessageToAgents(contact: Contact): Flux<Void> {
+    if (!contact.busy){
+        return Optional.ofNullable(SessionCentral.agents[contact.company])
+            .map { Flux.fromIterable(it.values) }
+            .orElse(Flux.empty())
+            .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null, null))))) }
+
+    }
+    return Flux.empty()
+}
 
