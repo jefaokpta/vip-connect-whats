@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.model.CompanyInfo
 import br.com.vipsolutions.connect.model.ws.ActionWs
+import br.com.vipsolutions.connect.repository.AuthWhatsappRepository
 import br.com.vipsolutions.connect.service.CompanyService
 import br.com.vipsolutions.connect.util.RegisterCompanyCenter
 import br.com.vipsolutions.connect.util.objectToJson
@@ -13,7 +14,10 @@ import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Mono
 
 @Service
-class WsRegisterHandler(private val companyService: CompanyService) : WebSocketHandler {
+class WsRegisterHandler(
+    private val companyService: CompanyService,
+    private val authWhatsappRepository: AuthWhatsappRepository
+) : WebSocketHandler {
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
         .flatMap { handleActions(it, session) }
@@ -41,6 +45,7 @@ class WsRegisterHandler(private val companyService: CompanyService) : WebSocketH
             "DESTROY" -> companyService.destroyCompany(action.instanceId)
                 .map { webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, it))) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, CompanyInfo(0, 0, 0, "Empresa invalida"))))))
+                .doFinally { authWhatsappRepository.deleteByCompanyId(action.instanceId).subscribe() }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, CompanyInfo(0, 0, 0, "Empresa invalida")))))
         }

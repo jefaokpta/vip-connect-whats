@@ -11,4 +11,6 @@ import reactor.core.publisher.Mono
 interface AuthWhatsappRepository: ReactiveCrudRepository<AuthWhatsapp, Long> {
 
     fun findByCompanyId(company: Long): Mono<AuthWhatsapp>
+
+    fun deleteByCompanyId(companyId: Long): Mono<Void>
 }
