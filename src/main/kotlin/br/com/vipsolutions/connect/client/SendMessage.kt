@@ -20,8 +20,12 @@ fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header("Content-Type", "application/json")
         .build()
-    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println("ENVIANDO MENSAGEM RETORNO ${response.statusCode()}")
+    try {
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+            println("ENVIANDO MENSAGEM RETORNO ${response.statusCode()}")
+        }
+    }catch (ex: Exception){
+        println("DEU RUIM AO ENVIAR MENSAGEM PRO NODE INSTANCE_ID ${contact.instanceId} - ${ex.message}")
     }
 }
 
