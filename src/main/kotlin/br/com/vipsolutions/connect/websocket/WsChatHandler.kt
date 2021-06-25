@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.websocket
 
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
@@ -29,6 +30,7 @@ class WsChatHandler(
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
+        //println(webSocketMessage.payloadAsText)
         val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
 
         return when(agentActionWs.action){
@@ -58,6 +60,16 @@ class WsChatHandler(
                             lockContact(it, agentActionWs.agent).subscribe()
                         }
                 }
+
+            "SEND_TXT_MESSAGE" -> {
+                if (agentActionWs.message !== null && agentActionWs.contact !== null){
+                    sendTextMessage(agentActionWs.message!!, agentActionWs.contact!!)
+                }
+                else{
+                    agentActionWs.errorMessage = "FALTANDO OBJETO MESSAGE OU CONTACT"
+                }
+                return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
+            }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "Açao Desconhecida." })))
         }

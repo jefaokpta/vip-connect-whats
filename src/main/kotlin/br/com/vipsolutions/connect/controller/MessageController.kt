@@ -42,6 +42,7 @@ class MessageController(
         val timestamp = jsonObject.getAsJsonObject("messageTimestamp")["low"].asLong
         val status = jsonObject["status"].asInt
         val company = jsonObject["company"].asLong
+        val instanceId = jsonObject["instanceId"].asInt
 
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
         //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
@@ -60,11 +61,16 @@ class MessageController(
                     whatsChatRepository.save(dbWhatsChat)
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
+                .doFinally {
+                    contactRepository.findByWhatsapp(whatsChat.remoteJid)
+                        .map { contactOnAttendance(it, whatsChat)}
+                        .subscribe()
+                }
 
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
-                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company)))
+                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId)))
                 .map { contactOnAttendance(it, whatsChat)}
                 .map { addContactCenter(company, it) }
                 .map { alertNewMessageToAgents(it).subscribe() }

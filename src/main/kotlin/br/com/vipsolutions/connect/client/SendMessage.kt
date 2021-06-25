@@ -1,5 +1,9 @@
 package br.com.vipsolutions.connect.client
 
+import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.WhatsChat
+import br.com.vipsolutions.connect.model.WhatsMessage
+import com.google.gson.Gson
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -9,6 +13,17 @@ import java.net.http.HttpResponse
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 2021-04-26
  */
+
+fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
+    val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages"))
+        .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(WhatsMessage(whatsChat.text, whatsChat.remoteJid))))
+//            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
+        .header("Content-Type", "application/json")
+        .build()
+    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+        println("ENVIANDO MENSAGEM RETORNO ${response.statusCode()}")
+    }
+}
 
 fun sendTextMessage(data: String, instance: Int){
     val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages"))

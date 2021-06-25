@@ -22,7 +22,6 @@ class SessionCentral {
 
 fun unlockContact(contact: Contact, agent: Int): Flux<Void> {
     val agentSession = SessionCentral.agents[contact.company]?.get(agent) ?: return Flux.empty()
-    println("APAGANDO CONTATO PRIMEIRO")
     if (agentSession.contact !== null){
         val contactCopy = Contact(agentSession.contact!!)
         contactCopy.locked = false
