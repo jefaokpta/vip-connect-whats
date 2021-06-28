@@ -45,6 +45,11 @@ class WsRegisterHandler(
             "DESTROY" -> companyService.destroyCompany(action.instanceId)
                 .map { webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, it))) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, CompanyInfo(0, 0, 0, "Empresa invalida"))))))
+                //.doFinally { authWhatsappRepository.deleteByCompanyId(action.instanceId).subscribe() }
+
+            "DESTROY_AUTH" -> companyService.destroyCompany(action.instanceId)
+                .map { webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, it))) }
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, CompanyInfo(0, 0, 0, "Empresa invalida"))))))
                 .doFinally { authWhatsappRepository.deleteByCompanyId(action.instanceId).subscribe() }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(ActionWs(action.action, action.controlNumber, action.instanceId, null, CompanyInfo(0, 0, 0, "Empresa invalida")))))
