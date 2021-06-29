@@ -67,11 +67,22 @@ class WsChatHandler(
                 }
                 else{
                     agentActionWs.errorMessage = "FALTANDO OBJETO MESSAGE OU CONTACT"
+                    agentActionWs.action = "ERROR"
                 }
                 return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
             }
 
-            else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "Açao Desconhecida." })))
+            "UNLOCK_CONTACT" -> {
+                if (agentActionWs.contact !== null && agentActionWs.agent > 0){
+                    agentActionWs.action = "UNLOCK_CONTACT_RESPONSE"
+                    return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
+                        .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
+                }
+                agentActionWs.action = "ERROR"
+                agentActionWs.errorMessage = "FALTANDO CONTATO OU AGENTE"
+                return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
+            }
+            else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }
     }
 

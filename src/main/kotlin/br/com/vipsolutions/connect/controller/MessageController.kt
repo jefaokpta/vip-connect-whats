@@ -70,7 +70,7 @@ class MessageController(
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
-                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId)))
+                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, null)))
                 .map { contactOnAttendance(it, whatsChat)}
                 .map { addContactCenter(company, it) }
                 .map { alertNewMessageToAgents(it).subscribe() }

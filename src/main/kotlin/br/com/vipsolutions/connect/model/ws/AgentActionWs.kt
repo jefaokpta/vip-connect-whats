@@ -8,7 +8,7 @@ import br.com.vipsolutions.connect.model.WhatsChat
  * Date: 2021-06-03
  */
 class AgentActionWs(
-    val action: String,
+    var action: String,
     val agent: Int,
     val company: Int,
     var contacts: List<Contact>?,

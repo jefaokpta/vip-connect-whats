@@ -15,14 +15,16 @@ data class Contact(
     val name: String?,
     val whatsapp: String,
     val company: Long,
-    val instanceId: Int
+    val instanceId: Int,
+    val imgUrl: String?
 ) {
     constructor(contact: Contact): this(
         contact.id,
         contact.name,
         contact.whatsapp,
         contact.company,
-        contact.instanceId
+        contact.instanceId,
+        contact.imgUrl
     )
     @Transient
     var busy = false
