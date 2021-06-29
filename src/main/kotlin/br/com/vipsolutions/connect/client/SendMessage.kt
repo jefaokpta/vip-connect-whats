@@ -44,9 +44,5 @@ fun getMessage() {
         .GET().build()
     HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
         println(response.body())
-//            val pessoa = jacksonObjectMapper().writeValueAsString(Person("Local", 23))
-//            println(pessoa)
-//            val p = jacksonObjectMapper().readValue(response.body(), Person::class.java)
-//            println("IDADE ${p.age} NOME ${p.name}")
     }
 }

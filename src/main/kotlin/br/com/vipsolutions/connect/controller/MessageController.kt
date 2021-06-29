@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
+import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
@@ -70,12 +71,22 @@ class MessageController(
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
-                .switchIfEmpty(contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, null)))
+                .switchIfEmpty(Mono.defer { prepareContactToSave(remoteJid, company, instanceId) })
                 .map { contactOnAttendance(it, whatsChat)}
                 .map { addContactCenter(company, it) }
                 .map { alertNewMessageToAgents(it).subscribe() }
                 .flatMap { whatsChatRepository.save(whatsChat) }
         }
+    }
+
+    private fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
+        val profilePicture = getProfilePicture(instanceId, remoteJid)
+        if(profilePicture.picture !== null){
+            //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
+            return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, profilePicture.picture))
+        }
+        println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
+        return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, null))
     }
 
     @GetMapping("/{remoteJid}")
