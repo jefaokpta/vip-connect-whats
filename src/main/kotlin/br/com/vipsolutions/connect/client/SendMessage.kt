@@ -17,7 +17,6 @@ import java.net.http.HttpResponse
 fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
     val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(WhatsMessage(whatsChat.text, contact.whatsapp))))
-//            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header("Content-Type", "application/json")
         .build()
     try {
