@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.util
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ContactsAndId
 import br.com.vipsolutions.connect.model.ws.MessageCount
 import reactor.core.publisher.Flux
 import java.util.*
@@ -40,14 +41,14 @@ fun addContactCenter(company: Long, contact: Contact): Contact {
     return contact
 }
 
-fun contactsHaveNewMessages(contacts: Flux<Contact>) = contacts
-    .map { contact ->
-        Optional.ofNullable(ContactCenter.contacts[contact.company])
-            .map {
-                if (it.containsKey(contact.id)){
-                    contact.newMessage = true
-                    contact.newMessageQtde = it[contact.id]!!.message
-                }
-            }
-        contact
+fun contactsHaveNewMessages(contacts: List<Contact>): ContactsAndId {
+    val contactsAndId = ContactsAndId(contacts, contacts[0].company)
+    val contactMap = ContactCenter.contacts[contactsAndId.companyId] ?: return contactsAndId
+    contacts.forEach{ contact ->
+        if (contactMap.containsKey(contact.id)) {
+            contact.newMessage = true
+            contact.newMessageQtde = contactMap[contact.id]!!.message
+        }
     }
+    return contactsAndId
+}

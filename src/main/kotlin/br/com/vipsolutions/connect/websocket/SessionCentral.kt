@@ -2,12 +2,12 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ContactsAndId
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.model.ws.AgentSession
 import br.com.vipsolutions.connect.util.objectToJson
 import org.springframework.web.reactive.socket.WebSocketSession
-import reactor.core.Disposable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
@@ -20,11 +20,28 @@ class SessionCentral {
     }
 }
 
+fun verifyLockedContacts(contactsAndId: ContactsAndId): List<Contact> {
+    val contactsBusy = mutableMapOf<Long, Int>()
+    println("EMPRESA VERIFICADA ${contactsAndId.companyId}")
+    SessionCentral.agents[contactsAndId.companyId]?.values?.forEach {
+        if (it.contact !== null){
+            contactsBusy[it.contact!!.id] = 0
+        }
+    } ?: return contactsAndId.contacts
+
+    contactsAndId.contacts.forEach{ contact ->
+        if (contactsBusy.containsKey(contact.id)) {
+            contact.busy = true
+        }
+    }
+    return contactsAndId.contacts
+}
+
 fun unlockContact(contact: Contact, agent: Int): Flux<Void> {
     val agentSession = SessionCentral.agents[contact.company]?.get(agent) ?: return Flux.empty()
     if (agentSession.contact !== null){
         val contactCopy = Contact(agentSession.contact!!)
-        contactCopy.locked = false
+        contactCopy.busy = false
         agentSession.contact = null
         return broadcastToAgents(contactCopy, "UNLOCK_CONTACT")
     }
@@ -34,7 +51,7 @@ fun unlockContact(contact: Contact, agent: Int): Flux<Void> {
 fun lockContact(contact: Contact, agent: Int): Flux<Void> {
     val agentSession = SessionCentral.agents[contact.company]?.get(agent) ?: return Flux.empty()
     agentSession.contact = contact
-    contact.locked = true
+    contact.busy = true
     return broadcastToAgents(contact, "LOCK_CONTACT")
 }
 

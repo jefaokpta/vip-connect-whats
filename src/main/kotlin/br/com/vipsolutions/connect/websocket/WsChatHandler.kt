@@ -37,8 +37,9 @@ class WsChatHandler(
             "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { contactRepository.findAllByCompany(it.id) }
-                .map (::contactsHaveNewMessages)
                 .flatMap { it.collectList() }
+                .map (::contactsHaveNewMessages)
+                .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)

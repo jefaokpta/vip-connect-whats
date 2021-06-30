@@ -32,6 +32,4 @@ data class Contact(
     var newMessage = false
     @Transient
     var newMessageQtde = 0
-    @Transient
-    var locked = false
 }
