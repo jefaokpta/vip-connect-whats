@@ -3,8 +3,6 @@ package br.com.vipsolutions.connect.util
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.ContactsAndId
 import br.com.vipsolutions.connect.model.ws.MessageCount
-import reactor.core.publisher.Flux
-import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >

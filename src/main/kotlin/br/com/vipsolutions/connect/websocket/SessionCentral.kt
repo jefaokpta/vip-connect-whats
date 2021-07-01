@@ -22,7 +22,6 @@ class SessionCentral {
 
 fun verifyLockedContacts(contactsAndId: ContactsAndId): List<Contact> {
     val contactsBusy = mutableMapOf<Long, Int>()
-    println("EMPRESA VERIFICADA ${contactsAndId.companyId}")
     SessionCentral.agents[contactsAndId.companyId]?.values?.forEach {
         if (it.contact !== null){
             contactsBusy[it.contact!!.id] = 0
@@ -88,13 +87,12 @@ fun removeAgentSession(session: WebSocketSession){
     agentsMap.forEach{companyMap ->
         companyMap.value.forEach{sessionMap ->
             if (session == sessionMap.value.session){
-                //companyMap.value.remove(sessionMap.key)
                 SessionCentral.agents[companyMap.key]?.remove(sessionMap.key)
                 println("removido agente chave ${sessionMap.key} do mapa id ${companyMap.key}")
+                return
             }
         }
     }
-    agentsMap.clear()
 }
 
 fun contactOnAttendance(contact: Contact, whatsChat: WhatsChat): Contact {
