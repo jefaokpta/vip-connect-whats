@@ -48,6 +48,11 @@ class MessageController(
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
         //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
+        if (jsonObject["message"].isJsonNull){
+            println("ITERACAO DO WHATS SEM MENSAGEM")
+            return Mono.empty()
+        }
+        //println(jsonObject["message"].isJsonNull)
         jsonObject.addProperty("error", "Erro: Não encontrado texto ou conversa.")
         val text = jsonObject.getAsJsonObject("message")["conversation"]?:
             jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage")["text"]?:
@@ -80,6 +85,7 @@ class MessageController(
     }
 
     private fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
+        println("PREPARE")
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
             //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
