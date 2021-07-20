@@ -47,11 +47,7 @@ class WsChatHandler(
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null, null, null, null)))))
 
-            "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
-                .map { whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(it.whatsapp) }
-                .orElse(Flux.empty())
-                .collectList()
-                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
+            "CONTACT_ANSWERED" -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                 .doFinally {
                     Optional.ofNullable(agentActionWs.contact)
                         .map {
@@ -61,6 +57,12 @@ class WsChatHandler(
                             lockContact(it, agentActionWs.agent).subscribe()
                         }
                 }
+
+            "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
+                .map { whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(it.whatsapp) }
+                .orElse(Flux.empty())
+                .collectList()
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
 
             "SEND_TXT_MESSAGE" -> {
                 if (agentActionWs.message !== null && agentActionWs.contact !== null){
