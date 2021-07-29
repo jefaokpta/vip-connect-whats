@@ -15,10 +15,13 @@ data class WhatsChat(
     @Id
     val messageId: String,
     val remoteJid: String,
-    val text: String,
+    var text: String,
     val fromMe: Boolean,
     var status: Int,
     val datetime: LocalDateTime = LocalDateTime.now(),
+    var media: Boolean = false,
+    var mediaType: String?,
+    var mediaUrl: String?
 ): Persistable<String> {
     @Transient
     var isPersistable: Boolean = true

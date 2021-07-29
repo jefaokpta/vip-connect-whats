@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.util
 
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.CompanyInfo
+import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -9,7 +10,8 @@ import br.com.vipsolutions.connect.model.CompanyInfo
  */
 
 fun createInstance(company: Company): CompanyInfo {
-    val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} -e API_PORT=${company.instance} --restart=on-failure jefaokpta/node-whats:1.0"
+    val nodeWhatsVersion = Optional.ofNullable(System.getenv("NODE_WHATS_VERSION")).orElse("1.0")
+    val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} -e API_PORT=${company.instance} --restart=on-failure -v /opt/whatsMediaHost:/whatsMedia jefaokpta/node-whats:$nodeWhatsVersion"
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
         .orElse(CompanyInfo(company, "Container Whats já estava UP"))

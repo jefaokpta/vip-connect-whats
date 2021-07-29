@@ -48,17 +48,25 @@ class MessageController(
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
         //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
-        if (jsonObject["message"].isJsonNull){
-            println("ITERACAO DO WHATS SEM MENSAGEM")
-            return Mono.empty()
+        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null)
+        if(jsonObject["mediaMessage"].asBoolean){
+            whatsChat.media = true
+            whatsChat.mediaType = jsonObject["mediaType"].asString
+            whatsChat.mediaUrl = jsonObject["mediaUrl"].asString.substringAfterLast("/")
         }
-        //println(jsonObject["message"].isJsonNull)
-        jsonObject.addProperty("error", "Erro: Não encontrado texto ou conversa.")
-        val text = jsonObject.getAsJsonObject("message")["conversation"]?:
+        else{
+            if (jsonObject["message"].isJsonNull){
+                println("ITERACAO DO WHATS SEM MENSAGEM")
+                return Mono.empty()
+            }
+            jsonObject.addProperty("error", "Erro: Não encontrado texto ou conversa.")
+            val textJson = jsonObject.getAsJsonObject("message")["conversation"]?:
             jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage")["text"]?:
             jsonObject["error"]
+            whatsChat.text = textJson.asString
+        }
 
-        val whatsChat = WhatsChat(messageId, remoteJid, text.asString, fromMe, status, datetime)
+
         return if(fromMe){
             whatsChatRepository.findById(messageId)
                 .flatMap { dbWhatsChat ->
