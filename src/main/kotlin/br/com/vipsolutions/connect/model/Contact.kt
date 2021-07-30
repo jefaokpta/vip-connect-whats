@@ -16,7 +16,7 @@ data class Contact(
     val whatsapp: String,
     val company: Long,
     val instanceId: Int,
-    val imgUrl: String?
+    var imgUrl: String?
 ) {
     constructor(contact: Contact): this(
         contact.id,

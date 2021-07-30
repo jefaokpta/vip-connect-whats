@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.websocket
 
+import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
@@ -84,6 +85,14 @@ class WsChatHandler(
                 agentActionWs.action = "ERROR"
                 agentActionWs.errorMessage = "FALTANDO CONTATO OU AGENTE"
                 return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
+            }
+
+            "PROFILE_PICTURE" -> {
+                var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTA OBJ CONTATO" })))
+                val profilePicture = getProfilePicture(contact.instanceId, contact.whatsapp).picture?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "NAO FOI POSSSIVEL OBTER FOTO DO PERFIL" })))
+                contact.imgUrl = profilePicture
+                return contactRepository.save(contact)
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
             }
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }

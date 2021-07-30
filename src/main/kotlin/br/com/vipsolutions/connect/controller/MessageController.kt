@@ -93,7 +93,6 @@ class MessageController(
     }
 
     private fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
-        println("PREPARE")
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
             //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
