@@ -48,11 +48,14 @@ class MessageController(
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
         //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
-        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null)
+        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null, null)
         if(jsonObject["mediaMessage"].asBoolean){
             whatsChat.media = true
             whatsChat.mediaType = jsonObject["mediaType"].asString
             whatsChat.mediaUrl = jsonObject["mediaUrl"].asString.substringAfterLast("/")
+            if(jsonObject.has("mediaCaption")){
+                whatsChat.mediaCaption = jsonObject["mediaCaption"].asString
+            }
         }
         else{
             if (jsonObject["message"].isJsonNull){
