@@ -3,6 +3,7 @@ package br.com.vipsolutions.connect.model
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
+import java.time.LocalDateTime
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -16,7 +17,9 @@ data class Contact(
     val whatsapp: String,
     val company: Long,
     val instanceId: Int,
-    var imgUrl: String?
+    var imgUrl: String?,
+    var lastMessageId: String?,
+    var lastMessageTime: LocalDateTime?
 ) {
     constructor(contact: Contact): this(
         contact.id,
@@ -24,7 +27,9 @@ data class Contact(
         contact.whatsapp,
         contact.company,
         contact.instanceId,
-        contact.imgUrl
+        contact.imgUrl,
+        contact.lastMessageId,
+        contact.lastMessageTime
     )
     @Transient
     var busy = false
