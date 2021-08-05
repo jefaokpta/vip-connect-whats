@@ -37,7 +37,7 @@ class WsChatHandler(
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
-                .map { contactRepository.findAllByCompany(it.id) }
+                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
                 .flatMap { it.collectList() }
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
