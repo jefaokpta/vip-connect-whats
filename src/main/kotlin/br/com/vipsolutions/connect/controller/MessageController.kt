@@ -81,6 +81,7 @@ class MessageController(
                 .doFinally {
                     contactRepository.findByWhatsapp(whatsChat.remoteJid)
                         .map { contactOnAttendance(it, whatsChat)}
+                        .flatMap { updateContactLastMessage(it, datetime, messageId) }
                         .subscribe()
                 }
 
