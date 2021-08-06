@@ -22,7 +22,9 @@ data class WhatsChat(
     var media: Boolean = false,
     var mediaType: String?,
     var mediaUrl: String?,
-    var mediaCaption: String?
+    var mediaCaption: String?,
+    var mediaFileLength: Long?,
+    var mediaPageCount: Int?
 ): Persistable<String> {
     @Transient
     var isPersistable: Boolean = true

@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -48,13 +49,22 @@ class MessageController(
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
         //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
-        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null, null)
+        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null, null, null, null)
         if(jsonObject["mediaMessage"].asBoolean){
             whatsChat.media = true
             whatsChat.mediaType = jsonObject["mediaType"].asString
             whatsChat.mediaUrl = jsonObject["mediaUrl"].asString.substringAfterLast("/")
+            if(jsonObject.has("mediaFileLength")){
+                whatsChat.mediaFileLength = jsonObject.getAsJsonObject("mediaFileLength")["low"].asLong
+            }
+            if(jsonObject.has("mediaPageCount")){
+                whatsChat.mediaPageCount = jsonObject["mediaPageCount"].asInt
+            }
             if(jsonObject.has("mediaCaption")){
                 whatsChat.mediaCaption = jsonObject["mediaCaption"].asString
+            }
+            if(jsonObject.has("mediaFileTitle")){
+                whatsChat.mediaCaption = jsonObject["mediaFileTitle"].asString
             }
         }
         else{
