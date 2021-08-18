@@ -1,9 +1,12 @@
 package br.com.vipsolutions.connect.client
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.FileUpload
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.WhatsMessage
 import com.google.gson.Gson
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -39,10 +42,11 @@ fun sendTextMessage(data: String, instance: Int){
     }
 }
 
-fun getMessage() {
-    val request = HttpRequest.newBuilder(URI("http://localhost/services/receive-call"))
-        .GET().build()
-    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println(response.body())
-    }
-}
+fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http://localhost:${fileUpload.instanceId}").build()
+        .post()
+        .uri("/whats/messages/medias")
+        .header("Content-Type", "application/json")
+        .body(Mono.just(fileUpload), FileUpload::class.java)
+        .retrieve()
+        .bodyToMono(Void::class.java)
+
