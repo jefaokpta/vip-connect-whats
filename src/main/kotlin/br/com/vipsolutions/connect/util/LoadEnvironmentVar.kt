@@ -2,8 +2,6 @@ package br.com.vipsolutions.connect.util
 
 import br.com.vipsolutions.connect.model.EnvironmentVar
 import com.google.gson.Gson
-import org.springframework.boot.CommandLineRunner
-import org.springframework.context.annotation.Configuration
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -13,25 +11,22 @@ import kotlin.system.exitProcess
  * Date: 18/08/21
  */
 
-@Configuration
-class LoadEnvironmentVar: CommandLineRunner {
-    override fun run(vararg args: String?) {
-        println("CARREGANDO VARIAVEIS DO ARQUIVO env.json")
-        val filePath = Path.of("env.json")
-        if (Files.exists(filePath)){
-            val readString = Files.readString(filePath)
-            val env = Gson().fromJson(readString, EnvironmentVar::class.java)
-            if (env.nodeWhatsVersion.isNullOrBlank() || env.uploadedFileFolder.isNullOrBlank()){
-                println("REVEJA env.json ESTA COM ERROS!!")
-                exitProcess(1)
-            }
-            EnvironmentVarCenter.environmentVar = env
-            println(EnvironmentVarCenter.environmentVar)
-        }
-        else{
-            println("FALTANDO ARQUIVO env.json COM VARIAVEIS DE AMBIENTE!!")
+
+fun loadVars(): EnvironmentVar {
+    println("CARREGANDO VARIAVEIS DO ARQUIVO env.json")
+    val filePath = Path.of("env.json")
+    if (Files.exists(filePath)){
+        val readString = Files.readString(filePath)
+        val env = Gson().fromJson(readString, EnvironmentVar::class.java)
+        if (env.nodeWhatsVersion.isNullOrBlank() || env.uploadedFileFolder.isNullOrBlank()){
+            println("REVEJA env.json ESTA COM ERROS!!")
             exitProcess(1)
         }
+        println(env)
+        return env
     }
-
+    else{
+        println("FALTANDO ARQUIVO env.json COM VARIAVEIS DE AMBIENTE!!")
+        exitProcess(1)
+    }
 }

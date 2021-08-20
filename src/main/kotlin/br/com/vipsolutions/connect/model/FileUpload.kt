@@ -7,8 +7,9 @@ package br.com.vipsolutions.connect.model
 class FileUpload(
     val remoteJid: String,
     val instanceId: Int,
-    val caption: String,
+    val fileType: String,
     val ptt: Boolean = false,
+    val caption: String?,
     var filePath: String?
 ) {
 }

@@ -1,6 +1,5 @@
 package br.com.vipsolutions.connect.util
 
-import br.com.vipsolutions.connect.model.EnvironmentVar
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -9,6 +8,6 @@ import br.com.vipsolutions.connect.model.EnvironmentVar
 class EnvironmentVarCenter {
 
     companion object {
-        var environmentVar = EnvironmentVar(null, null)
+        val environmentVar = loadVars()
     }
 }
