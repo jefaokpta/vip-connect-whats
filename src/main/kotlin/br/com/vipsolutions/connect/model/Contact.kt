@@ -19,7 +19,8 @@ data class Contact(
     val instanceId: Int,
     var imgUrl: String?,
     var lastMessageId: String?,
-    var lastMessageTime: LocalDateTime?
+    var lastMessageTime: LocalDateTime?,
+    val category: String?
 ) {
     constructor(contact: Contact): this(
         contact.id,
@@ -29,7 +30,8 @@ data class Contact(
         contact.instanceId,
         contact.imgUrl,
         contact.lastMessageId,
-        contact.lastMessageTime
+        contact.lastMessageTime,
+        contact.category
     )
     @Transient
     var busy = false
