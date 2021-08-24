@@ -21,6 +21,7 @@ class FileUploadController {
 
     private val basePath = Paths.get(EnvironmentVarCenter.environmentVar.uploadedFileFolder!!)
 
+    @CrossOrigin
     @PostMapping
     fun upload(@RequestPart("fileJson") fileJson: String, @RequestPart("file") filePartMono: Mono<FilePart>): Mono<Void> {
         val fileUpload = Gson().fromJson(fileJson, FileUpload::class.java)
