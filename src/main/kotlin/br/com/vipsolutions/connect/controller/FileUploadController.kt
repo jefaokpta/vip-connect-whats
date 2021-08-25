@@ -25,7 +25,7 @@ class FileUploadController {
     @PostMapping
     fun upload(@RequestPart("fileJson") fileJson: String, @RequestPart("file") filePartMono: Mono<FilePart>): Mono<Void> {
         val fileUpload = Gson().fromJson(fileJson, FileUpload::class.java)
-        println(basePath)
+        println(fileJson)
         return filePartMono
             .doOnNext { fileUpload.filePath = it.filename() }
             .delayUntil { it.transferTo(basePath.resolve(it.filename())) }
