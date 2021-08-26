@@ -1,11 +1,14 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.client.getProfilePicture
+import br.com.vipsolutions.connect.client.getRobotMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
+import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
+import br.com.vipsolutions.connect.service.MessageService
 import br.com.vipsolutions.connect.util.addContactCenter
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
@@ -27,7 +30,8 @@ import java.util.*
 @RequestMapping("/api/messages")
 class MessageController(
     private val whatsChatRepository: WhatsChatRepository,
-    private val contactRepository: ContactRepository
+    private val contactRepository: ContactRepository,
+    private val messageService: MessageService
 ) {
 
     @PostMapping("/test")
@@ -91,67 +95,17 @@ class MessageController(
                 .doFinally {
                     contactRepository.findByWhatsapp(whatsChat.remoteJid)
                         .map { contactOnAttendance(it, whatsChat)}
-                        .flatMap { updateContactLastMessage(it, datetime, messageId) }
+                        .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
                         .subscribe()
                 }
 
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
-                .switchIfEmpty(Mono.defer { prepareContactToSave(remoteJid, company, instanceId) })
-                //.map { sendTextMessage(WhatsChat("", "", "RECEBI SIM", false, 0, datetime, false, null, null, null, null, null), it); it }
-                .flatMap { verifyMessageCategory(it, whatsChat) }
-//                .map { contactOnAttendance(it, whatsChat)}
-//                .map { addContactCenter(company, it) }
-//                .flatMap { updateContactLastMessage(it, datetime, messageId) }
-//                .map { alertNewMessageToAgents(it).subscribe() }
+                .switchIfEmpty(Mono.defer { messageService.prepareContactToSave(remoteJid, company, instanceId) })
+                .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
                 .flatMap { whatsChatRepository.save(whatsChat) }
         }
-    }
-
-    private fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
-        println("VERIFICANDO CATEGORIA")
-        if (contact.category.isNullOrBlank()){
-            sendTextMessage(WhatsChat(
-                "",
-                "",
-                "PRIMEIRO CONTATO",
-                false,
-                0,
-                whatsChat.datetime,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null
-            ), contact)
-            return Mono.empty()
-        }
-        else{
-            return Mono.just(contact)
-                .map { contactOnAttendance(it, whatsChat)}
-                .map { addContactCenter(contact.company, it) }
-                .flatMap { updateContactLastMessage(it, whatsChat.datetime, whatsChat.messageId) }
-                .doFinally { alertNewMessageToAgents(contact).subscribe() }
-                //.map { alertNewMessageToAgents(it) }
-        }
-
-    }
-
-    private fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
-        lastMessageId = messageId
-        lastMessageTime = datetime
-    })
-
-    private fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
-        val profilePicture = getProfilePicture(instanceId, remoteJid)
-        if(profilePicture.picture !== null){
-            //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
-            return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, profilePicture.picture, null, null, null))
-        }
-        println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
-        return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, null, null, null, null))
     }
 
     @GetMapping("/{remoteJid}")
