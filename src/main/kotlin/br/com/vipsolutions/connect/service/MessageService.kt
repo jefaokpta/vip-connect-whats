@@ -54,27 +54,25 @@ class MessageService(private val contactRepository: ContactRepository) {
 
     private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
         if (isAnswer(ura, whatsChat)){
-            return deliverMessageFlow(contact, whatsChat)
+            return robotResponseToContact(ura.thank, contact, whatsChat)
+                .flatMap { deliverMessageFlow(it, whatsChat) }
         }
-        return robotResponseToContact(ura.greeting, contact, whatsChat)
+        return robotResponseToContact(ura, contact, whatsChat)
     }
 
     private fun robotResponseToContact(message: String, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         sendTextMessage(
-            WhatsChat(
-            "",
-            "",
-            message,
-            false,
-            0,
-            whatsChat.datetime,
-            false,
-            null,
-            null,
-            null,
-            null,
-            null
-        ), contact)
+            WhatsChat("", "", message, false, 0, whatsChat.datetime,
+                false, null, null, null, null, null), contact)
+        return Mono.just(contact)
+    }
+
+    private fun robotResponseToContact(ura: Ura, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
+        val stringBuilder = StringBuilder(ura.greeting)
+        ura.answers.forEach { stringBuilder.append("\n ${it.answer} para ${it.category}") }
+        sendTextMessage(
+            WhatsChat("", "", stringBuilder.toString(), false, 0, whatsChat.datetime,
+                false, null, null, null, null, null), contact)
         return Mono.just(contact)
     }
 

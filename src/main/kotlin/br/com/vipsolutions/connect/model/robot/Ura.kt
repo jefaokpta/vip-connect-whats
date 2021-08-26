@@ -8,6 +8,7 @@ class Ura(
     val id: Long,
     val company: Long,
     val greeting: String,
+    val thank: String,
     val answers: List<UraAnswer>
 ) {
 }
