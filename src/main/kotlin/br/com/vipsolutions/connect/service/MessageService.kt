@@ -13,6 +13,7 @@ import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
+import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -53,8 +54,10 @@ class MessageService(private val contactRepository: ContactRepository) {
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
     private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
-        if (isAnswer(ura, whatsChat)){
+        val answer = isAnswer(ura, whatsChat, contact)
+        if (answer.isPresent){
             return robotResponseToContact(ura.thank, contact, whatsChat)
+                .flatMap { contactRepository.save(answer.get()) }
                 .flatMap { deliverMessageFlow(it, whatsChat) }
         }
         return robotResponseToContact(ura, contact, whatsChat)
@@ -76,13 +79,13 @@ class MessageService(private val contactRepository: ContactRepository) {
         return Mono.just(contact)
     }
 
-    private fun isAnswer(ura: Ura, whatsChat: WhatsChat): Boolean {
+    private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.answers.forEach { answer ->
             if (answer.answer.equals(whatsChat.text, true)) {
-                return true
+                return Optional.of(contact.apply { category = answer.category })
             }
         }
-        return false
+        return Optional.empty()
     }
 
 }
