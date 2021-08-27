@@ -13,7 +13,6 @@ import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
 import java.util.*
 
@@ -32,10 +31,23 @@ class MessageService(private val contactRepository: ContactRepository) {
                 .switchIfEmpty(Mono.just(contact))
                 .flatMap { getRobotUra(contact.company) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
+                .switchIfEmpty (categorizedContact(contact.apply { category = 0 }, whatsChat))
                 .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }
+    }
+
+    private fun categorizedContact(contact: Contact, whatsChat: WhatsChat) = contactRepository.save(contact)
+        .flatMap { deliverMessageFlow(it, whatsChat) }
+
+    private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
+        val answer = isAnswer(ura, whatsChat, contact)
+        if (answer.isPresent){
+            return robotResponseToContact(ura.thank, contact, whatsChat)
+                .flatMap { categorizedContact(answer.get(), whatsChat) }
+        }
+        return robotResponseToContact(ura, contact, whatsChat)
     }
 
     fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
@@ -59,15 +71,6 @@ class MessageService(private val contactRepository: ContactRepository) {
         .flatMap { updateContactLastMessage(it, whatsChat.datetime, whatsChat.messageId) }
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
-    private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
-        val answer = isAnswer(ura, whatsChat, contact)
-        if (answer.isPresent){
-            return robotResponseToContact(ura.thank, contact, whatsChat)
-                .flatMap { contactRepository.save(answer.get()) }
-                .flatMap { deliverMessageFlow(it, whatsChat) }
-        }
-        return robotResponseToContact(ura, contact, whatsChat)
-    }
 
     private fun robotResponseToContact(message: String, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         sendTextMessage(

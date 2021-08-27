@@ -60,6 +60,7 @@ fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8
     .header("Content-Type", "application/json")
     .retrieve()
     .bodyToMono(Ura::class.java)
+    .onErrorResume { Mono.empty() }
 
 fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
     .get()
