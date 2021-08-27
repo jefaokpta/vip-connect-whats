@@ -1,7 +1,8 @@
 package br.com.vipsolutions.connect.service
 
 import br.com.vipsolutions.connect.client.getProfilePicture
-import br.com.vipsolutions.connect.client.getRobotMessage
+import br.com.vipsolutions.connect.client.getRobotGreeting
+import br.com.vipsolutions.connect.client.getRobotUra
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
@@ -12,6 +13,7 @@ import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
 import java.util.*
 
@@ -25,8 +27,12 @@ class MessageService(private val contactRepository: ContactRepository) {
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         println("VERIFICANDO CATEGORIA")
         return if (Optional.ofNullable(contact.category).isEmpty){
-            getRobotMessage(contact.company)
+            getRobotGreeting(contact.company)
+                .flatMap { robotResponseToContact(it.greet,contact, whatsChat) }
+                .switchIfEmpty(Mono.just(contact))
+                .flatMap { getRobotUra(contact.company) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
+                .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }

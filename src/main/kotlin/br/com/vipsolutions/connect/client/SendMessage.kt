@@ -4,9 +4,12 @@ import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.FileUpload
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.WhatsMessage
+import br.com.vipsolutions.connect.model.robot.Greeting
 import br.com.vipsolutions.connect.model.robot.Ura
 import com.google.gson.Gson
+import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClientException
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.http.HttpClient
@@ -51,9 +54,17 @@ fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http
         .retrieve()
         .bodyToMono(Void::class.java)
 
-fun getRobotMessage(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
+fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
     .get()
-    .uri("/robot/message/$company")
+    .uri("/robot/ura/$company")
     .header("Content-Type", "application/json")
     .retrieve()
     .bodyToMono(Ura::class.java)
+
+fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
+    .get()
+    .uri("/robot/greeting/$company")
+    .header("Content-Type", "application/json")
+    .retrieve()
+    .bodyToMono(Greeting::class.java)
+    .onErrorResume { Mono.empty() }

@@ -1,16 +1,10 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.client.getProfilePicture
-import br.com.vipsolutions.connect.client.getRobotMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
-import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
-import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
-import br.com.vipsolutions.connect.util.addContactCenter
-import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -20,7 +14,6 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
