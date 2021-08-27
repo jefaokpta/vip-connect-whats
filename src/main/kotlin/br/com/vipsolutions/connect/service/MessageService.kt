@@ -24,7 +24,7 @@ class MessageService(private val contactRepository: ContactRepository) {
 
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         println("VERIFICANDO CATEGORIA")
-        return if (contact.category.isNullOrBlank()){
+        return if (Optional.ofNullable(contact.category).isEmpty){
             getRobotMessage(contact.company)
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
         } else{
@@ -81,8 +81,8 @@ class MessageService(private val contactRepository: ContactRepository) {
 
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.answers.forEach { answer ->
-            if (answer.answer.equals(whatsChat.text, true)) {
-                return Optional.of(contact.apply { category = answer.category })
+            if (answer.answer.toString() == whatsChat.text) {
+                return Optional.of(contact.apply { category = answer.answer })
             }
         }
         return Optional.empty()
