@@ -8,6 +8,6 @@ package br.com.vipsolutions.connect.util
 class EnvironmentVarCenter {
 
     companion object {
-        val environmentVar = loadVars()
+        var environmentVar = loadVars()
     }
 }

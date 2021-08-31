@@ -7,9 +7,14 @@ import org.springframework.web.reactive.socket.WebSocketSession
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 2021-06-22
  */
-class AgentSession(
-    val session: WebSocketSession,
+class AgentSessionDAO(
+    val session: String,
     var contact: Contact?,
     val category: MutableList<Int> = mutableListOf()
 ) {
+    constructor(agentSession: AgentSession): this (
+        agentSession.session.id,
+        agentSession.contact,
+        agentSession.category
+    )
 }
