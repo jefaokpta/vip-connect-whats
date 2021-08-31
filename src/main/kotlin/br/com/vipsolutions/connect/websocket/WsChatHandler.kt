@@ -37,16 +37,19 @@ class WsChatHandler(
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
-                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
+                .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
+                .map { contacts -> contacts.filter { agentActionWs.category.contains(it.category) } }
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
+                .log()
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
-                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action, agentActionWs.agent, agentActionWs.company, null, null, null, null, null)))))
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action,
+                    agentActionWs.agent, agentActionWs.company, null, null, null, null, null)))))
 
             "CONTACT_ANSWERED" -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                 .doFinally {
@@ -94,6 +97,14 @@ class WsChatHandler(
                 return contactRepository.save(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
             }
+
+            "FINALIZE_ATTENDANCE" -> {
+                val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTA OBJ CONTATO" })))
+                contact.category = null
+                return contactRepository.save(contact)
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
+            }
+
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }
     }

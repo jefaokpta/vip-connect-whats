@@ -73,7 +73,7 @@ private fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNul
     ))))) }
 
 fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
-    actionWs.category.forEach { println(it) }
+    //actionWs.category.forEach { println(it) }
     if (SessionCentral.agents.contains(company.id)){
         SessionCentral.agents[company.id]!![actionWs.agent] = AgentSession(webSocketSession, null, actionWs.category)
     }

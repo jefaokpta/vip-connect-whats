@@ -40,6 +40,9 @@ fun addContactCenter(company: Long, contact: Contact): Contact {
 }
 
 fun contactsHaveNewMessages(contacts: List<Contact>): ContactsAndId {
+    if (contacts.isEmpty()){
+        return ContactsAndId(contacts, 0)
+    }
     val contactsAndId = ContactsAndId(contacts, contacts[0].company)
     val contactMap = ContactCenter.contacts[contactsAndId.companyId] ?: return contactsAndId
     contacts.forEach{ contact ->
