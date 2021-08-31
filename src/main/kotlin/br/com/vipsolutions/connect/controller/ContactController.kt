@@ -1,9 +1,12 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ws.AgentSession
+import br.com.vipsolutions.connect.model.ws.AgentSessionDAO
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.util.ContactCenter
 import br.com.vipsolutions.connect.websocket.SessionCentral
+import kotlinx.coroutines.reactive.collect
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -24,7 +27,7 @@ class ContactController(private val contactRepository: ContactRepository) {
 
     @GetMapping("/memory/agent/{company}")
     fun listMemoryAgentSessions(@PathVariable company: Long) = Mono.justOrEmpty(SessionCentral.agents[company])
-        .map { it.keys.toList() }
+        .map { it.values.map(::AgentSessionDAO) }
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "lista não encontrado.")))
 
 //    @GetMapping
