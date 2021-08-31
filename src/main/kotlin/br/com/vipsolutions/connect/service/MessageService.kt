@@ -32,7 +32,7 @@ class MessageService(private val contactRepository: ContactRepository) {
                 .flatMap { getRobotUra(contact.company) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
                 .switchIfEmpty (categorizedContact(contact.apply { category = 0 }, whatsChat))
-                .log()
+                //.log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }

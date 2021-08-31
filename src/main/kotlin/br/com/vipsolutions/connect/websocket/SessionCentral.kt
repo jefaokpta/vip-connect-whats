@@ -113,7 +113,9 @@ fun contactOnAttendance(contact: Contact, whatsChat: WhatsChat): Contact {
 fun alertNewMessageToAgents(contact: Contact): Flux<Void> {
     if (!contact.busy){
         return Optional.ofNullable(SessionCentral.agents[contact.company])
-            .map { Flux.fromIterable(it.values) }
+            .map { agentSession ->
+                Flux.fromIterable(agentSession.values).filter { it.category.contains(contact.category) }
+            }
             .orElse(Flux.empty())
             .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null, null))))) }
 
