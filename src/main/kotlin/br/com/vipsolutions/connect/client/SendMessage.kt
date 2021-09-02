@@ -7,6 +7,8 @@ import br.com.vipsolutions.connect.model.WhatsMessage
 import br.com.vipsolutions.connect.model.robot.Greeting
 import br.com.vipsolutions.connect.model.robot.Ura
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientException
@@ -35,14 +37,30 @@ fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
     }
 }
 
-fun sendTextMessage(data: String, instance: Int){
+fun sendTextMessage(remoteJid: String, message: String, instance: Int){
+    val json = JsonObject()
+    json.addProperty("remoteJid", remoteJid)
+    json.addProperty("message", message)
     val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages"))
-        .POST(HttpRequest.BodyPublishers.ofString(data))
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header("Content-Type", "application/json")
         .build()
     HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println("Enviado $data RETORNO ${response.statusCode()}")
+        println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
+    }
+}
+
+fun sendButtonsMessage(remoteJid: String, name: String, instance: Int){
+    val json = JsonObject()
+    json.addProperty("remoteJid", remoteJid)
+    json.addProperty("name", name)
+    val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages/buttons"))
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+        .header("Content-Type", "application/json")
+        .build()
+    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+        println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
     }
 }
 
@@ -61,6 +79,7 @@ fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8
     .retrieve()
     .bodyToMono(Ura::class.java)
     .onErrorResume { Mono.empty() }
+//    .log()
 
 fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
     .get()

@@ -1,13 +1,14 @@
 package br.com.vipsolutions.connect.service
 
-import br.com.vipsolutions.connect.client.getProfilePicture
-import br.com.vipsolutions.connect.client.getRobotGreeting
-import br.com.vipsolutions.connect.client.getRobotUra
-import br.com.vipsolutions.connect.client.sendTextMessage
+import br.com.vipsolutions.connect.client.*
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
+import br.com.vipsolutions.connect.repository.GreetingRepository
+import br.com.vipsolutions.connect.repository.UraOptionRepository
+import br.com.vipsolutions.connect.repository.UraRepository
+import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.util.addContactCenter
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
@@ -21,18 +22,21 @@ import java.util.*
  * Date: 26/08/21
  */
 @Service
-class MessageService(private val contactRepository: ContactRepository) {
+class MessageService(
+    private val contactRepository: ContactRepository,
+    private val greetingRepository: GreetingRepository,
+    private val uraRepository: UraRepository,
+    private val uraOptionService: UraOptionService
+) {
 
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         println("VERIFICANDO CATEGORIA")
         return if (Optional.ofNullable(contact.category).isEmpty){
-            getRobotGreeting(contact.company)
-                .flatMap { robotResponseToContact(it.greet,contact, whatsChat) }
-                .switchIfEmpty(Mono.just(contact))
-                .flatMap { getRobotUra(contact.company) }
+            uraRepository.findByCompany(contact.company)
+                .flatMap { uraOptionService.fillOptions(it) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
                 .switchIfEmpty (categorizedContact(contact.apply { category = 0 }, whatsChat))
-                //.log()
+                .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }
@@ -44,20 +48,26 @@ class MessageService(private val contactRepository: ContactRepository) {
     private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
         val answer = isAnswer(ura, whatsChat, contact)
         if (answer.isPresent){
-            return robotResponseToContact(ura.thank, contact, whatsChat)
+            return robotResponseToContact(ura.validOption, contact)
                 .flatMap { categorizedContact(answer.get(), whatsChat) }
         }
-        return robotResponseToContact(ura, contact, whatsChat)
+        return robotResponseToContact(ura, contact)
     }
 
-    fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int): Mono<Contact> {
+    fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
+        //.doOnNext { println("PERGUNTANDO NOME") }
+        .flatMap { robotAskContactName(remoteJid, it.greet, instanceId, whatsChat) }
+//        .flatMap { prepareContactToSave(remoteJid, company, instanceId) }
+//        .log()
+
+    fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int, name: String): Mono<Contact> {
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
             //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
-            return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, profilePicture.picture, null, null, null))
+            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture, null, null, null))
         }
         println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
-        return contactRepository.save(Contact(0, "Desconhecido", remoteJid, company, instanceId, null, null, null, null))
+        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null, null, null))
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
@@ -72,26 +82,34 @@ class MessageService(private val contactRepository: ContactRepository) {
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
 
-    private fun robotResponseToContact(message: String, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
-        sendTextMessage(
-            WhatsChat("", "", message, false, 0, whatsChat.datetime,
-                false, null, null, null, null, null), contact)
+    private fun robotResponseToContact(message: String?, contact: Contact): Mono<Contact> {
+        Optional.ofNullable(message)
+            .map { sendTextMessage(contact.whatsapp, it, contact.instanceId) }
         return Mono.just(contact)
     }
 
-    private fun robotResponseToContact(ura: Ura, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
-        val stringBuilder = StringBuilder(ura.greeting)
-        ura.answers.forEach { stringBuilder.append("\n ${it.answer} para ${it.category}") }
-        sendTextMessage(
-            WhatsChat("", "", stringBuilder.toString(), false, 0, whatsChat.datetime,
-                false, null, null, null, null, null), contact)
+    private fun robotAskContactName(remoteJid: String, message: String, instanceId: Int, whatsChat: WhatsChat): Mono<Contact>{
+        if (WaitContactNameCenter.names.containsKey(remoteJid)){
+            WaitContactNameCenter.names[remoteJid] = whatsChat.text
+            sendButtonsMessage(remoteJid, whatsChat.text, instanceId)
+        } else {
+            WaitContactNameCenter.names[remoteJid] = ""
+            sendTextMessage(remoteJid, message, instanceId)
+        }
+        return Mono.empty()
+    }
+
+    private fun robotResponseToContact(ura: Ura, contact: Contact): Mono<Contact> {
+        val stringBuilder = StringBuilder(ura.initialMessage)
+        ura.options.forEach { stringBuilder.append("\n ${it.option} para ${it.department}") }
+        sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
         return Mono.just(contact)
     }
 
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
-        ura.answers.forEach { answer ->
-            if (answer.answer.toString() == whatsChat.text) {
-                return Optional.of(contact.apply { category = answer.answer })
+        ura.options.forEach { answer ->
+            if (answer.option.toString() == whatsChat.text) {
+                return Optional.of(contact.apply { category = answer.option })
             }
         }
         return Optional.empty()

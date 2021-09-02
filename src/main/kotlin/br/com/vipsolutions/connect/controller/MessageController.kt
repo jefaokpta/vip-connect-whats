@@ -1,10 +1,14 @@
 package br.com.vipsolutions.connect.controller
 
+import br.com.vipsolutions.connect.client.getRobotGreeting
 import br.com.vipsolutions.connect.client.sendTextMessage
+import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.repository.ContactRepository
+import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
+import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -24,14 +28,11 @@ import java.time.ZoneId
 class MessageController(
     private val whatsChatRepository: WhatsChatRepository,
     private val contactRepository: ContactRepository,
-    private val messageService: MessageService
+    private val messageService: MessageService,
+    private val greetingRepository: GreetingRepository
 ) {
 
-    @PostMapping("/test")
-    fun sendingTextMessageToNode(@RequestBody json: String){
-        sendTextMessage(json, 3001)
-    }
-    @PostMapping //@Transactional
+    @PostMapping
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
         //println(payload)
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
@@ -95,10 +96,40 @@ class MessageController(
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
-                .switchIfEmpty(Mono.defer { messageService.prepareContactToSave(remoteJid, company, instanceId) })
+                .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
+                .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, null, null,
+                    null, null)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
+                .log()
         }
+    }
+
+    @PostMapping("/responses")
+    fun buttonsResponse(@RequestBody payload: String): Mono<Void> {
+        println(payload)
+        val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
+        val selectedBtn = jsonObject.getAsJsonObject("message")
+            .getAsJsonObject("buttonsResponseMessage")["selectedButtonId"].asInt
+        val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
+        val company = jsonObject["company"].asLong
+        val instanceId = jsonObject["instanceId"].asInt
+
+        if (selectedBtn > 0){
+            val name = WaitContactNameCenter.names.remove(remoteJid)?: "Desconhecido"
+            val whatsChat = WhatsChat(
+                "", "", "Nome $name confirmado.", false, 0, LocalDateTime.now(),
+                false, null, null, null, null, null
+            )
+            return messageService.prepareContactToSave(remoteJid, company, instanceId, name)
+                .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
+                .then()
+                //.log()
+        }
+        return greetingRepository.findByCompany(company)
+            .doFirst { sendTextMessage(remoteJid, "Não tem problema.", instanceId) }
+            .map { sendTextMessage(remoteJid, it.greet, instanceId) }
+            .then()
     }
 
     @GetMapping("/{remoteJid}")
