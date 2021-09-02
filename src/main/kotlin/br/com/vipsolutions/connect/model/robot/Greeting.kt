@@ -13,6 +13,9 @@ class Greeting(
     val id: Long,
     val company: Long,
     val controlNumber: Long,
-    val greet: String
+    val greet: String,
+    val btnText: String,
+    val btnFooterText: String?,
+    val btnNegative: String
 ) {
 }

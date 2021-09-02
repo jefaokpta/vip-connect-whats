@@ -3,10 +3,10 @@ package br.com.vipsolutions.connect.service
 import br.com.vipsolutions.connect.client.*
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
+import br.com.vipsolutions.connect.model.robot.Greeting
 import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GreetingRepository
-import br.com.vipsolutions.connect.repository.UraOptionRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.util.addContactCenter
@@ -36,7 +36,7 @@ class MessageService(
                 .flatMap { uraOptionService.fillOptions(it) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
                 .switchIfEmpty (categorizedContact(contact.apply { category = 0 }, whatsChat))
-                .log()
+//                .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }
@@ -55,8 +55,8 @@ class MessageService(
     }
 
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
-        //.doOnNext { println("PERGUNTANDO NOME") }
-        .flatMap { robotAskContactName(remoteJid, it.greet, instanceId, whatsChat) }
+        .switchIfEmpty(greetingRepository.findByCompany(0))
+        .flatMap { robotAskContactName(remoteJid, it, instanceId, whatsChat) }
 //        .flatMap { prepareContactToSave(remoteJid, company, instanceId) }
 //        .log()
 
@@ -88,13 +88,13 @@ class MessageService(
         return Mono.just(contact)
     }
 
-    private fun robotAskContactName(remoteJid: String, message: String, instanceId: Int, whatsChat: WhatsChat): Mono<Contact>{
+    private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat): Mono<Contact>{
         if (WaitContactNameCenter.names.containsKey(remoteJid)){
             WaitContactNameCenter.names[remoteJid] = whatsChat.text
-            sendButtonsMessage(remoteJid, whatsChat.text, instanceId)
+            sendButtonsMessage(remoteJid, whatsChat.text, instanceId, greeting)
         } else {
             WaitContactNameCenter.names[remoteJid] = ""
-            sendTextMessage(remoteJid, message, instanceId)
+            sendTextMessage(remoteJid, greeting.greet, instanceId)
         }
         return Mono.empty()
     }

@@ -51,10 +51,11 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
     }
 }
 
-fun sendButtonsMessage(remoteJid: String, name: String, instance: Int){
+fun sendButtonsMessage(remoteJid: String, name: String, instance: Int, greeting: Greeting){
     val json = JsonObject()
     json.addProperty("remoteJid", remoteJid)
-    json.addProperty("name", name)
+    json.addProperty("btnText", greeting.btnText.replace("$:name", name))
+    json.addProperty("btnFooterText", greeting.btnFooterText)
     val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages/buttons"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
         .header("Content-Type", "application/json")

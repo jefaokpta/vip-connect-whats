@@ -101,7 +101,7 @@ class MessageController(
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, null, null,
                     null, null)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
-                .log()
+//                .log()
         }
     }
 
@@ -115,6 +115,8 @@ class MessageController(
         val company = jsonObject["company"].asLong
         val instanceId = jsonObject["instanceId"].asInt
 
+        if (!WaitContactNameCenter.names.containsKey(remoteJid)) return Mono.empty() // PARA ENGRACADINHOS Q APERTAREM SIM DEPOIS NAO
+
         if (selectedBtn > 0){
             val name = WaitContactNameCenter.names.remove(remoteJid)?: "Desconhecido"
             val whatsChat = WhatsChat(
@@ -127,7 +129,8 @@ class MessageController(
                 //.log()
         }
         return greetingRepository.findByCompany(company)
-            .doFirst { sendTextMessage(remoteJid, "Não tem problema.", instanceId) }
+            .doOnNext { sendTextMessage(remoteJid, it.btnNegative, instanceId) }
+            .switchIfEmpty(greetingRepository.findByCompany(0))
             .map { sendTextMessage(remoteJid, it.greet, instanceId) }
             .then()
     }
