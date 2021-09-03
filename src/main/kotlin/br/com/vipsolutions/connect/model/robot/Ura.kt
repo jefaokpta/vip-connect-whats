@@ -22,4 +22,15 @@ class Ura(
 ) {
     @Transient
     var options: List<UraOption> = mutableListOf()
+
+    constructor(ura: Ura, dbUra: Ura): this(
+        dbUra.id,
+        dbUra.company,
+        dbUra.controlNumber,
+        ura.initialMessage,
+        ura.agentEmpty,
+        ura.invalidOption,
+        ura.validOption,
+        ura.finalMessage
+    )
 }

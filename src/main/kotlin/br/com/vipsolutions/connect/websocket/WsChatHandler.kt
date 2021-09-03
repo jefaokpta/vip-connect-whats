@@ -5,6 +5,7 @@ import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
+import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.util.ContactCenter
 import br.com.vipsolutions.connect.util.contactsHaveNewMessages
@@ -22,7 +23,8 @@ import java.util.*
 class WsChatHandler(
     private val contactRepository: ContactRepository,
     private val companyRepository: CompanyRepository,
-    private val whatsChatRepository: WhatsChatRepository
+    private val whatsChatRepository: WhatsChatRepository,
+    private val uraRepository: UraRepository
 ) : WebSocketHandler {
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
@@ -43,7 +45,7 @@ class WsChatHandler(
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
-                .log()
+//                .log()
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
@@ -102,6 +104,10 @@ class WsChatHandler(
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTA OBJ CONTATO" })))
                 contact.category = null
                 return contactRepository.save(contact)
+                    .flatMap { uraRepository.findByCompany(contact.company) }
+                    .map { Optional.ofNullable(it.finalMessage) }
+                    .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
+                    .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
             }
 

@@ -8,6 +8,7 @@ import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.UraRepository
+import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.util.addContactCenter
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
@@ -46,11 +47,19 @@ class MessageService(
         .flatMap { deliverMessageFlow(it, whatsChat) }
 
     private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
-        val answer = isAnswer(ura, whatsChat, contact)
-        if (answer.isPresent){
-            return robotResponseToContact(ura.validOption, contact)
-                .flatMap { categorizedContact(answer.get(), whatsChat) }
+        if (AnsweringUraCenter.contacts.containsKey(whatsChat.remoteJid)){
+            val answer = isAnswer(ura, whatsChat, contact)
+            if (answer.isPresent){
+                AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
+                return robotResponseToContact(ura.validOption, contact)
+                    .flatMap { categorizedContact(answer.get(), whatsChat) }
+            }
+            return if(ura.invalidOption.isNullOrBlank()){
+                robotResponseToContact(ura, contact)
+            }else Mono.just(sendTextMessage(contact.whatsapp, ura.invalidOption, contact.instanceId))
+                .flatMap { robotResponseToContact(ura, contact) }
         }
+        AnsweringUraCenter.contacts[whatsChat.remoteJid] = ""
         return robotResponseToContact(ura, contact)
     }
 

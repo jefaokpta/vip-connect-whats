@@ -1,6 +1,5 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.client.getRobotGreeting
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
@@ -129,7 +128,7 @@ class MessageController(
                 //.log()
         }
         return greetingRepository.findByCompany(company)
-            .doOnNext { sendTextMessage(remoteJid, it.btnNegative, instanceId) }
+            .doOnNext { if (!it.btnNegative.isNullOrBlank()) sendTextMessage(remoteJid, it.btnNegative, instanceId) }
             .switchIfEmpty(greetingRepository.findByCompany(0))
             .map { sendTextMessage(remoteJid, it.greet, instanceId) }
             .then()

@@ -73,19 +73,19 @@ fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http
         .retrieve()
         .bodyToMono(Void::class.java)
 
-fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
-    .get()
-    .uri("/robot/ura/$company")
-    .header("Content-Type", "application/json")
-    .retrieve()
-    .bodyToMono(Ura::class.java)
-    .onErrorResume { Mono.empty() }
-//    .log()
-
-fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
-    .get()
-    .uri("/robot/greeting/$company")
-    .header("Content-Type", "application/json")
-    .retrieve()
-    .bodyToMono(Greeting::class.java)
-    .onErrorResume { Mono.empty() }
+//fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
+//    .get()
+//    .uri("/robot/ura/$company")
+//    .header("Content-Type", "application/json")
+//    .retrieve()
+//    .bodyToMono(Ura::class.java)
+//    .onErrorResume { Mono.empty() }
+////    .log()
+//
+//fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
+//    .get()
+//    .uri("/robot/greeting/$company")
+//    .header("Content-Type", "application/json")
+//    .retrieve()
+//    .bodyToMono(Greeting::class.java)
+//    .onErrorResume { Mono.empty() }

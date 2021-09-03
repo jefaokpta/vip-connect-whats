@@ -14,8 +14,17 @@ class Greeting(
     val company: Long,
     val controlNumber: Long,
     val greet: String,
-    val btnText: String,
+    val btnText: String = "Seu nome é \"$:name\", está correto?",
     val btnFooterText: String?,
-    val btnNegative: String
+    val btnNegative: String?
 ) {
+    constructor(greeting: Greeting, dbGreeting: Greeting): this(
+        dbGreeting.id,
+        dbGreeting.company,
+        dbGreeting.controlNumber,
+        greeting.greet,
+        greeting.btnText,
+        greeting.btnFooterText,
+        greeting.btnNegative
+    )
 }
