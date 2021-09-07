@@ -7,6 +7,7 @@ import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
+import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import com.google.gson.Gson
@@ -122,6 +123,7 @@ class MessageController(
                 "", "", "Nome $name confirmado.", false, 0, LocalDateTime.now(),
                 false, null, null, null, null, null
             )
+            AnsweringUraCenter.contacts[remoteJid] = ""
             return messageService.prepareContactToSave(remoteJid, company, instanceId, name)
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
                 .then()
