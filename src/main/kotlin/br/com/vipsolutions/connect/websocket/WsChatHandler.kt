@@ -37,7 +37,7 @@ class WsChatHandler(
         val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
 
         return when(agentActionWs.action){
-            "ONLINE" -> companyRepository.findByCompany(agentActionWs.company)
+            "ONLINE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
@@ -51,7 +51,7 @@ class WsChatHandler(
                 .flatMap { contactRepository.save(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                 .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action,
-                    agentActionWs.agent, agentActionWs.company, null, null, null, null, null)))))
+                    agentActionWs.agent, agentActionWs.controlNumber, null, null, null, null, null)))))
 
             "CONTACT_ANSWERED" -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                 .doFinally {

@@ -10,7 +10,7 @@ import br.com.vipsolutions.connect.model.WhatsChat
 class AgentActionWs(
     var action: String,
     val agent: Int,
-    val company: Int,
+    val controlNumber: Long,
     var contacts: List<Contact>?,
     var contact: Contact?,
     var messages: List<WhatsChat>?,

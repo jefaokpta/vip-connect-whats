@@ -23,9 +23,16 @@ class UraController(
         .flatMap { uraOptionService.fillOptions(it) }
 
     @PostMapping
-    fun save(@RequestBody ura: Ura) = uraRepository.findByCompany(ura.company)
+    fun save(@RequestBody ura: Ura) = uraRepository.findByControlNumber(ura.controlNumber)
         .flatMap { uraRepository.save(Ura(ura, it)) }
-        .doOnNext{uraOptionRepository.deleteAllByUraId(ura.id)}
-        .switchIfEmpty(uraRepository.save(ura))
-        .map { uraOptionRepository.saveAll(ura.options) }
+        .switchIfEmpty(uraOptionService.saveUraWithCompany(ura))
+        .doOnNext{uraOptionRepository.deleteAllByUraId(it.id).subscribe()}
+        .flatMap { uraOptionRepository.saveAll(uraOptionService.setUraIdInOptions(ura.options, it.id)).collectList() }
+        .then()
+//        .log()
+
+    @DeleteMapping("/{controlNumber}")
+    fun delete(@PathVariable controlNumber: Long) = uraRepository.findByControlNumber(controlNumber)
+        .doOnNext{uraOptionRepository.deleteAllByUraId(it.id).subscribe()}
+        .flatMap { uraRepository.deleteById(it.id) }
 }

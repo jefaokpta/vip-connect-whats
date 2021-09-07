@@ -1,16 +1,12 @@
 package br.com.vipsolutions.connect.service
 
 import br.com.vipsolutions.connect.model.Company
-import br.com.vipsolutions.connect.model.CompanyInfo
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.util.createInstance
 import br.com.vipsolutions.connect.util.destroyInstance
 import br.com.vipsolutions.connect.util.startInstance
 import br.com.vipsolutions.connect.util.stopInstance
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 
 /**
@@ -20,9 +16,9 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 @Service
 class CompanyService(private val companyRepository: CompanyRepository) {
 
-    fun infoCompany(company: Int) = companyRepository.findByCompany(company)
+    fun infoCompany(controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
 
-    fun createCompany(company: Int) = verifyCompanyExists(company)
+    fun createCompany(controlNumber: Long) = verifyControlNumberExists(controlNumber)
         .flatMap (this::activateInstance)
         //.switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada.")))
 
@@ -46,13 +42,13 @@ class CompanyService(private val companyRepository: CompanyRepository) {
         companyRepository.save(company.apply { isActive = true; isStopped = false })
         .map ( ::createInstance )
 
-    private fun verifyCompanyExists(company: Int) = companyRepository.findByCompany(company)
+    private fun verifyControlNumberExists(controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
             .switchIfEmpty { companyRepository.count()
                     .flatMap { count ->
                         if (count > 0) {
-                            companyRepository.max().flatMap { companyRepository.save(Company(0, company, it + 1)) }
+                            companyRepository.max().flatMap { companyRepository.save(Company(0, controlNumber, it + 1)) }
                         } else {
-                            companyRepository.save(Company(0, company, 3001))
+                            companyRepository.save(Company(0, controlNumber, 3001))
                         }
                     }
             }

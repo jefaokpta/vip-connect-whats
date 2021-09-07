@@ -11,7 +11,7 @@ import org.springframework.data.relational.core.mapping.Table
 data class Company(
     @Id
     val id: Long,
-    val company: Int,
+    val controlNumber: Long,
     val instance: Int,
     var isActive: Boolean = false,
     var isStopped: Boolean = false

@@ -8,7 +8,7 @@ import br.com.vipsolutions.connect.model.CompanyInfo
  */
 class ActionWs(
     val action: String,
-    val controlNumber: Int,
+    val controlNumber: Long,
     val instanceId: Long,
     val qrCode: QrCode?,
     val companyInfo: CompanyInfo?

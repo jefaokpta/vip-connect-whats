@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
  */
 interface CompanyRepository: ReactiveCrudRepository<Company, Long> {
 
-    fun findByCompany(company: Int): Mono<Company>
+    fun findByControlNumber(controlNumber: Long): Mono<Company>
 
     @Query("SELECT MAX(instance) FROM companies ")
     fun max(): Mono<Int>

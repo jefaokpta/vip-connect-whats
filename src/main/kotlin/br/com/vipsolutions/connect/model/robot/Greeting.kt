@@ -10,8 +10,8 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("greetings")
 class Greeting(
     @Id
-    val id: Long,
-    val company: Long,
+    var id: Long,
+    var company: Long,
     val controlNumber: Long,
     val greet: String,
     val btnText: String = "Seu nome é \"$:name\", está correto?",

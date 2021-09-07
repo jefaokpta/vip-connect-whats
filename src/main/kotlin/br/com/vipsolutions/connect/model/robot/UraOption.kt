@@ -6,8 +6,8 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("uras_options")
 class UraOption(
     @Id
-    val id: Long,
-    val uraId: Long,
+    var id: Long,
+    var uraId: Long,
     val option: Int,
     val department: String
 ) {

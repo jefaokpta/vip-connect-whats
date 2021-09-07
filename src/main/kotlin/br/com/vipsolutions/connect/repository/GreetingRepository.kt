@@ -11,4 +11,6 @@ import reactor.core.publisher.Mono
 interface GreetingRepository: ReactiveCrudRepository<Greeting, Long> {
 
     fun findByCompany(company: Long): Mono<Greeting>
+    fun findByControlNumber(controlNumber: Long): Mono<Greeting>
+    fun deleteByControlNumber(controlNumber: Long): Mono<Void>
 }

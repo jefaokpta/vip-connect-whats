@@ -11,8 +11,8 @@ import org.springframework.data.relational.core.mapping.Table
 @Table("uras")
 class Ura(
     @Id
-    val id: Long,
-    val company: Long,
+    var id: Long,
+    var company: Long,
     val controlNumber: Long,
     val initialMessage: String,
     val agentEmpty: String?,
@@ -21,7 +21,7 @@ class Ura(
     val finalMessage: String?,
 ) {
     @Transient
-    var options: List<UraOption> = mutableListOf()
+    var options: MutableList<UraOption> = mutableListOf()
 
     constructor(ura: Ura, dbUra: Ura): this(
         dbUra.id,

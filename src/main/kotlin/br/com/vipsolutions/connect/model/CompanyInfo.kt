@@ -6,7 +6,7 @@ package br.com.vipsolutions.connect.model
  */
 class CompanyInfo(
     val id: Long,
-    val company: Int,
+    val controlNumber: Long,
     val instance: Int,
     val message: String,
     val isActive: Boolean = false,
@@ -14,7 +14,7 @@ class CompanyInfo(
 ) {
     constructor(company: Company, message: String): this(
         company.id,
-        company.company,
+        company.controlNumber,
         company.instance,
         message,
         company.isActive,
