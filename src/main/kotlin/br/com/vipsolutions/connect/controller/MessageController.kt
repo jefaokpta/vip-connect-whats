@@ -130,8 +130,8 @@ class MessageController(
                 //.log()
         }
         return greetingRepository.findByCompany(company)
-            .doOnNext { if (!it.btnNegative.isNullOrBlank()) sendTextMessage(remoteJid, it.btnNegative, instanceId) }
             .switchIfEmpty(greetingRepository.findByCompany(0))
+            .doOnNext { if (!it.btnNegative.isNullOrBlank()) sendTextMessage(remoteJid, it.btnNegative, instanceId) }
             .map { sendTextMessage(remoteJid, it.greet, instanceId) }
             .then()
     }
