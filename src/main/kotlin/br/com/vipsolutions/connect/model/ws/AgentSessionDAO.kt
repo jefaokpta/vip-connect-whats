@@ -10,7 +10,7 @@ import org.springframework.web.reactive.socket.WebSocketSession
 class AgentSessionDAO(
     val session: String,
     var contact: Contact?,
-    val category: MutableList<Int> = mutableListOf()
+    val category: MutableList<Long> = mutableListOf()
 ) {
     constructor(agentSession: AgentSession): this (
         agentSession.session.id,

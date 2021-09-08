@@ -10,6 +10,6 @@ import org.springframework.web.reactive.socket.WebSocketSession
 class AgentSession(
     val session: WebSocketSession,
     var contact: Contact?,
-    val category: MutableList<Int> = mutableListOf()
+    val category: MutableList<Long> = mutableListOf()
 ) {
 }

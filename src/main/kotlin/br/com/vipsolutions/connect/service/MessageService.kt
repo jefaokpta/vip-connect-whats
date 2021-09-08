@@ -118,7 +118,7 @@ class MessageService(
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
-                return Optional.of(contact.apply { category = answer.option })
+                return Optional.of(contact.apply { category = answer.departmentId })
             }
         }
         return Optional.empty()

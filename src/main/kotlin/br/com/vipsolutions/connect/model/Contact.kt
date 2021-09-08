@@ -20,7 +20,7 @@ data class Contact(
     var imgUrl: String?,
     var lastMessageId: String?,
     var lastMessageTime: LocalDateTime?,
-    var category: Int?
+    var category: Long?
 ) {
     constructor(contact: Contact): this(
         contact.id,
