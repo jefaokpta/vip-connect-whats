@@ -51,16 +51,16 @@ class MessageService(
             val answer = isAnswer(ura, whatsChat, contact)
             if (answer.isPresent){
                 AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
-                return robotResponseToContact(ura.validOption, contact)
+                return buildUraMessage(ura.validOption, contact)
                     .flatMap { categorizedContact(answer.get(), whatsChat) }
             }
             return if(ura.invalidOption.isNullOrBlank()){
-                robotResponseToContact(ura, contact)
+                buildUraMessageNoInitialMessage(ura, contact)
             }else Mono.just(sendTextMessage(contact.whatsapp, ura.invalidOption, contact.instanceId))
-                .flatMap { robotResponseToContact(ura, contact) }
+                .flatMap { buildUraMessageNoInitialMessage(ura, contact) }
         }
         AnsweringUraCenter.contacts[whatsChat.remoteJid] = ""
-        return robotResponseToContact(ura, contact)
+        return buildUraMessage(ura, contact)
     }
 
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
@@ -91,7 +91,7 @@ class MessageService(
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
 
-    private fun robotResponseToContact(message: String?, contact: Contact): Mono<Contact> {
+    private fun buildUraMessage(message: String?, contact: Contact): Mono<Contact> {
         Optional.ofNullable(message)
             .map { sendTextMessage(contact.whatsapp, it, contact.instanceId) }
         return Mono.just(contact)
@@ -108,10 +108,17 @@ class MessageService(
         return Mono.empty()
     }
 
-    private fun robotResponseToContact(ura: Ura, contact: Contact): Mono<Contact> {
+    private fun buildUraMessage(ura: Ura, contact: Contact): Mono<Contact> {
         val stringBuilder = StringBuilder(ura.initialMessage)
-        ura.options.forEach { stringBuilder.append("\n ${it.option} para ${it.department}") }
+        ura.options.forEach { stringBuilder.append("\n ${it.option} - ${it.department}") }
         sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+        return Mono.just(contact)
+    }
+
+    private fun buildUraMessageNoInitialMessage(ura: Ura, contact: Contact): Mono<Contact> {
+        val stringBuilder = StringBuilder()
+        ura.options.forEach { stringBuilder.append("\n${it.option} - ${it.department}") }
+        sendTextMessage(contact.whatsapp, stringBuilder.toString().trim(), contact.instanceId)
         return Mono.just(contact)
     }
 
