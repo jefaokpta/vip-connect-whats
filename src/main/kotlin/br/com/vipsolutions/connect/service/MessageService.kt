@@ -53,7 +53,7 @@ class MessageService(
             if (answer.isPresent){
                 AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
                 return genericMessage(ura.validOption, answer.get())
-//                    .doOnNext { queryOnlineAgents(it) }
+                    .doOnNext { queryOnlineAgents(it) }
                     .flatMap { categorizedContact(it, whatsChat) }
             }
             return if(ura.invalidOption.isNullOrBlank()){
@@ -84,12 +84,12 @@ class MessageService(
         lastMessageTime = datetime
     })
 
-//    private fun queryOnlineAgents(contact: Contact){
-//        println(";;;;;;;;;;;; VENDO SE TEM AGENTES ONLINE")
-//        SessionCentral.agents[contact.company]?.forEach { agent ->
-//            agent.value.
-//        }
-//    }
+    private fun queryOnlineAgents(contact: Contact){
+        println(";;;;;;;;;;;; VENDO SE TEM AGENTES ONLINE")
+        SessionCentral.agents[contact.company]?.forEach { agent ->
+            agent.value.categories
+        }
+    }
 
     private fun deliverMessageFlow(contact: Contact, whatsChat: WhatsChat) = Mono.just(contact)
         .map { contactOnAttendance(it, whatsChat) }
