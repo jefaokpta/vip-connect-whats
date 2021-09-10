@@ -15,10 +15,9 @@ import reactor.core.publisher.Mono
 class WsChatHandlerService(private val contactRepository: ContactRepository) {
 
     fun contactsFilteredByLastCategory(company: Company, agent: Int): Mono<MutableList<Contact>> {
-        val agentCategorys = SessionCentral.agents[company.id]?.get(agent)?.category ?: return Mono.empty()
+        val agentCategorys = SessionCentral.agents[company.id]?.get(agent)?.categories ?: return Mono.empty()
         return contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id)
             .filter { agentCategorys.contains(it.lastCategory) }
             .collectList()
-//            .map { contacts -> contacts.filter { agentActionWs.category.contains(it.lastCategory) } }
     }
 }

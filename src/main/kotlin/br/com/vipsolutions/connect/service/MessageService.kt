@@ -85,10 +85,14 @@ class MessageService(
     })
 
     private fun queryOnlineAgents(contact: Contact){
-        println(";;;;;;;;;;;; VENDO SE TEM AGENTES ONLINE")
         SessionCentral.agents[contact.company]?.forEach { agent ->
-            agent.value.categories
+            if (agent.value.categories.contains(contact.category)){
+                return
+            }
         }
+        uraRepository.findByCompany(contact.company)
+            .map { genericMessage(it.agentEmpty, contact) }
+            .subscribe()
     }
 
     private fun deliverMessageFlow(contact: Contact, whatsChat: WhatsChat) = Mono.just(contact)
