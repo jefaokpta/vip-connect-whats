@@ -11,6 +11,7 @@ import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.util.addContactCenter
+import br.com.vipsolutions.connect.websocket.SessionCentral
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
@@ -51,8 +52,9 @@ class MessageService(
             val answer = isAnswer(ura, whatsChat, contact)
             if (answer.isPresent){
                 AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
-                return buildUraMessage(ura.validOption, contact)
-                    .flatMap { categorizedContact(answer.get(), whatsChat) }
+                return genericMessage(ura.validOption, answer.get())
+//                    .doOnNext { queryOnlineAgents(it) }
+                    .flatMap { categorizedContact(it, whatsChat) }
             }
             return if(ura.invalidOption.isNullOrBlank()){
                 buildUraMessageNoInitialMessage(ura, contact)
@@ -66,8 +68,6 @@ class MessageService(
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
         .switchIfEmpty(greetingRepository.findByCompany(0))
         .flatMap { robotAskContactName(remoteJid, it, instanceId, whatsChat) }
-//        .flatMap { prepareContactToSave(remoteJid, company, instanceId) }
-//        .log()
 
     fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int, name: String): Mono<Contact> {
         val profilePicture = getProfilePicture(instanceId, remoteJid)
@@ -84,6 +84,13 @@ class MessageService(
         lastMessageTime = datetime
     })
 
+//    private fun queryOnlineAgents(contact: Contact){
+//        println(";;;;;;;;;;;; VENDO SE TEM AGENTES ONLINE")
+//        SessionCentral.agents[contact.company]?.forEach { agent ->
+//            agent.value.
+//        }
+//    }
+
     private fun deliverMessageFlow(contact: Contact, whatsChat: WhatsChat) = Mono.just(contact)
         .map { contactOnAttendance(it, whatsChat) }
         .map { addContactCenter(contact.company, it) }
@@ -91,7 +98,7 @@ class MessageService(
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
 
-    private fun buildUraMessage(message: String?, contact: Contact): Mono<Contact> {
+    private fun genericMessage(message: String?, contact: Contact): Mono<Contact> {
         Optional.ofNullable(message)
             .map { sendTextMessage(contact.whatsapp, it, contact.instanceId) }
         return Mono.just(contact)

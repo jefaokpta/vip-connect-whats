@@ -44,7 +44,7 @@ class WsChatHandler(
                 .map { addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
-                .map { contacts -> contacts.filter { agentActionWs.category.contains(it.category) } }
+                .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }

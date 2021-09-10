@@ -75,10 +75,10 @@ private fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNul
 fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
     //actionWs.category.forEach { println(it) }
     if (SessionCentral.agents.contains(company.id)){
-        SessionCentral.agents[company.id]!![actionWs.agent] = AgentSession(webSocketSession, null, actionWs.category)
+        SessionCentral.agents[company.id]!![actionWs.agent] = AgentSession(webSocketSession, null, actionWs.categories)
     }
     else{
-        SessionCentral.agents[company.id] = mutableMapOf(actionWs.agent to AgentSession(webSocketSession, null, actionWs.category))
+        SessionCentral.agents[company.id] = mutableMapOf(actionWs.agent to AgentSession(webSocketSession, null, actionWs.categories))
     }
     return company
 }

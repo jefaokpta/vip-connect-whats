@@ -16,6 +16,6 @@ class AgentActionWs(
     var messages: List<WhatsChat>?,
     var message: WhatsChat?,
     var errorMessage: String?,
-    val category: MutableList<Long> = mutableListOf()
+    val categories: MutableList<Long> = mutableListOf()
 ) {
 }
