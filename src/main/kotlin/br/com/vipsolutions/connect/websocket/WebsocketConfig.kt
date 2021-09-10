@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.repository.*
 import br.com.vipsolutions.connect.service.CompanyService
+import br.com.vipsolutions.connect.service.WsChatHandlerService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
@@ -20,13 +21,14 @@ class WebsocketConfig(
     private val contactRepository: ContactRepository,
     private val whatsChatRepository: WhatsChatRepository,
     private val authWhatsappRepository: AuthWhatsappRepository,
-    private val uraRepository: UraRepository
+    private val uraRepository: UraRepository,
+    private val wsChatHandlerService: WsChatHandlerService
 ) {
 
     @Bean
     fun handlerMapping(): HandlerMapping? {
         val map: MutableMap<String, WebSocketHandler?> = HashMap()
-        map["/ws/chats"] = WsChatHandler(contactRepository, companyRepository, whatsChatRepository, uraRepository)
+        map["/ws/chats"] = WsChatHandler(contactRepository, companyRepository, whatsChatRepository, uraRepository, wsChatHandlerService)
         map["/ws/register"] = WsRegisterHandler(companyService, authWhatsappRepository)
         val mapping = SimpleUrlHandlerMapping()
         mapping.urlMap = map

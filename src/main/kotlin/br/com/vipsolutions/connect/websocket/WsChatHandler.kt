@@ -7,6 +7,7 @@ import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
+import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.ContactCenter
 import br.com.vipsolutions.connect.util.contactsHaveNewMessages
 import br.com.vipsolutions.connect.util.objectToJson
@@ -25,7 +26,8 @@ class WsChatHandler(
     private val contactRepository: ContactRepository,
     private val companyRepository: CompanyRepository,
     private val whatsChatRepository: WhatsChatRepository,
-    private val uraRepository: UraRepository
+    private val uraRepository: UraRepository,
+    private val wsChatHandlerService: WsChatHandlerService
 ) : WebSocketHandler {
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
@@ -112,8 +114,12 @@ class WsChatHandler(
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
             }
 
+            "LIST_CONTACTS_LAST_CATEGORY" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
+                .flatMap{ wsChatHandlerService.contactsFilteredByLastCategory(it, agentActionWs.agent) }
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
+
             "TEST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
-                .map { contactRepository.findAllByCompany(it.id) }
+                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
                 .flatMap { it.collectList() }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 

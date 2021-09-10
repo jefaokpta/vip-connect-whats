@@ -14,5 +14,4 @@ interface ContactRepository: ReactiveCrudRepository<Contact, Long> {
     fun findByWhatsapp(whatsapp: String): Mono<Contact>
 
     fun findAllByCompanyOrderByLastMessageTimeDesc(company: Long): Flux<Contact>
-    fun findAllByCompany(company: Long): Flux<Contact>
 }
