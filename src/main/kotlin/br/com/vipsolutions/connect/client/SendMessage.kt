@@ -46,8 +46,12 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header("Content-Type", "application/json")
         .build()
-    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
+    try {
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+            println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
+        }
+    }catch (ex: Exception){
+        println("DEU RUIM AO ENVIAR MENSAGEM PRO NODE INSTANCE_ID $instance - ${ex.message}")
     }
 }
 

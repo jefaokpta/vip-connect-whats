@@ -36,7 +36,7 @@ class MessageService(
             uraRepository.findByCompany(contact.company)
                 .flatMap { uraOptionService.fillOptions(it) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
-                .switchIfEmpty (categorizedContact(contact.apply { category = 0 }, whatsChat))
+                .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
 //                .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
@@ -73,10 +73,10 @@ class MessageService(
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
             //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
-            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture, null, null, null))
+            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture, null, null, null, 0))
         }
         println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
-        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null, null, null))
+        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null, null, null, 0))
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
@@ -125,7 +125,7 @@ class MessageService(
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
-                return Optional.of(contact.apply { category = answer.departmentId })
+                return Optional.of(contact.apply { category = answer.departmentId; lastCategory = answer.departmentId })
             }
         }
         return Optional.empty()

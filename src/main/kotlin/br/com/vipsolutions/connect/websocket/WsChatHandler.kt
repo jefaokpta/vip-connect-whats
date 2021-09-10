@@ -11,6 +11,7 @@ import br.com.vipsolutions.connect.util.ContactCenter
 import br.com.vipsolutions.connect.util.contactsHaveNewMessages
 import br.com.vipsolutions.connect.util.objectToJson
 import com.google.gson.Gson
+import kotlinx.coroutines.reactive.collect
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler
 import org.springframework.web.reactive.socket.WebSocketMessage
@@ -110,6 +111,11 @@ class WsChatHandler(
                     .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
             }
+
+            "TEST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
+                .map { contactRepository.findAllByCompany(it.id) }
+                .flatMap { it.collectList() }
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }

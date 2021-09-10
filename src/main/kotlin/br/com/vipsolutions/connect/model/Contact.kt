@@ -20,7 +20,8 @@ data class Contact(
     var imgUrl: String?,
     var lastMessageId: String?,
     var lastMessageTime: LocalDateTime?,
-    var category: Long?
+    var category: Long?,
+    var lastCategory: Long
 ) {
     constructor(contact: Contact): this(
         contact.id,
@@ -31,7 +32,8 @@ data class Contact(
         contact.imgUrl,
         contact.lastMessageId,
         contact.lastMessageTime,
-        contact.category
+        contact.category,
+        contact.lastCategory
     )
     @Transient
     var busy = false
