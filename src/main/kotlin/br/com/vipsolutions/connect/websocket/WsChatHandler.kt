@@ -112,7 +112,7 @@ class WsChatHandler(
                     .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
                     .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
-                    .doFinally { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
+                    .doOnNext { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }
 
             "LIST_CONTACTS_LAST_CATEGORY" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
