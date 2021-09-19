@@ -58,7 +58,7 @@ fun clearNewMessageToAgents(contact: Contact): Flux<Void> {
     return broadcastToAgents(contact.apply { newMessage = false; newMessageQtde = 0 }, "CONTACT_READED")
 }
 
-private fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNullable(SessionCentral.agents[contact.company])
+fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNullable(SessionCentral.agents[contact.company])
     .map { Flux.fromIterable(it.values) }
     .orElse(Flux.empty())
     .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs(
