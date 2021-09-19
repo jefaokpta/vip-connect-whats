@@ -67,7 +67,7 @@ class MessageService(
 
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
         .switchIfEmpty(greetingRepository.findByCompany(0))
-        .flatMap { robotAskContactName(remoteJid, it, instanceId, whatsChat) }
+        .flatMap { robotAskContactName(remoteJid, it, instanceId, whatsChat, company) }
 
     fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int, name: String): Mono<Contact> {
         val profilePicture = getProfilePicture(instanceId, remoteJid)
@@ -108,12 +108,12 @@ class MessageService(
         return Mono.just(contact)
     }
 
-    private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat): Mono<Contact>{
+    private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat,company: Long): Mono<Contact>{
         if (WaitContactNameCenter.names.containsKey(remoteJid)){
             WaitContactNameCenter.names.remove(remoteJid)
             //WaitContactNameCenter.names[remoteJid] = whatsChat.text
             //sendButtonsMessage(remoteJid, whatsChat.text, instanceId, greeting)
-            return prepareContactToSave(remoteJid, greeting.company, instanceId, whatsChat.text)
+            return prepareContactToSave(remoteJid, company, instanceId, whatsChat.text)
         } else {
             WaitContactNameCenter.names[remoteJid] = ""
             sendTextMessage(remoteJid, greeting.greet, instanceId)
