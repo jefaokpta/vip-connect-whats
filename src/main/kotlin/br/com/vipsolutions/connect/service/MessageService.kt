@@ -110,8 +110,10 @@ class MessageService(
 
     private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat): Mono<Contact>{
         if (WaitContactNameCenter.names.containsKey(remoteJid)){
-            WaitContactNameCenter.names[remoteJid] = whatsChat.text
-            sendButtonsMessage(remoteJid, whatsChat.text, instanceId, greeting)
+            WaitContactNameCenter.names.remove(remoteJid)
+            //WaitContactNameCenter.names[remoteJid] = whatsChat.text
+            //sendButtonsMessage(remoteJid, whatsChat.text, instanceId, greeting)
+            return prepareContactToSave(remoteJid, greeting.company, instanceId, whatsChat.text)
         } else {
             WaitContactNameCenter.names[remoteJid] = ""
             sendTextMessage(remoteJid, greeting.greet, instanceId)
