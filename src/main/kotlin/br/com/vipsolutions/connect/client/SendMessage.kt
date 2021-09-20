@@ -30,7 +30,7 @@ fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
         .build()
     try {
         HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-            println("ENVIANDO MENSAGEM RETORNO ${response.statusCode()}")
+            println("SEND CHAT $whatsChat RETORNO ${response.statusCode()}")
         }
     }catch (ex: Exception){
         println("DEU RUIM AO ENVIAR MENSAGEM PRO NODE INSTANCE_ID ${contact.instanceId} - ${ex.message}")
@@ -70,12 +70,13 @@ fun sendButtonsMessage(remoteJid: String, name: String, instance: Int, greeting:
 }
 
 fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http://localhost:${fileUpload.instanceId}").build()
-        .post()
-        .uri("/whats/messages/medias")
-        .header("Content-Type", "application/json")
-        .body(Mono.just(fileUpload), FileUpload::class.java)
-        .retrieve()
-        .bodyToMono(Void::class.java)
+    .post()
+    .uri("/whats/messages/medias")
+    .header("Content-Type", "application/json")
+    .body(Mono.just(fileUpload), FileUpload::class.java)
+    .retrieve()
+    .bodyToMono(Void::class.java)
+    .doFirst { println("SEND MEDIA MSG $fileUpload") }
 
 //fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
 //    .get()

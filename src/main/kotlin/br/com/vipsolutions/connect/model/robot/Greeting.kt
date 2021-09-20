@@ -8,7 +8,7 @@ import org.springframework.data.relational.core.mapping.Table
  * Date: 27/08/21
  */
 @Table("greetings")
-class Greeting(
+data class Greeting(
     @Id
     var id: Long,
     var company: Long,

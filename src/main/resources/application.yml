@@ -7,8 +7,8 @@ spring:
 server:
   error:
     include-stacktrace: on_param
-logging:
-  level:
-    org:
-      springframework:
-          r2dbc: DEBUG
+#logging:
+#  level:
+#    org:
+#      springframework:
+#          r2dbc: DEBUG

@@ -9,7 +9,7 @@ import org.springframework.data.relational.core.mapping.Table
  * Date: 25/08/21
  */
 @Table("uras")
-class Ura(
+data class Ura(
     @Id
     var id: Long,
     var company: Long,

@@ -24,6 +24,7 @@ class UraController(
 
     @PostMapping
     fun save(@RequestBody ura: Ura) = uraRepository.findByControlNumber(ura.controlNumber)
+        .doFirst { println("POST URA $ura") }
         .flatMap { uraRepository.save(Ura(ura, it)) }
         .switchIfEmpty(uraOptionService.saveUraWithCompany(ura))
         .doOnNext{uraOptionRepository.deleteAllByUraId(it.id).subscribe()}

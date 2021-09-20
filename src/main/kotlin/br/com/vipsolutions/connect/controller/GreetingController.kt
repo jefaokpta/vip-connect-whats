@@ -21,6 +21,7 @@ class GreetingController(
 
     @PostMapping
     fun save(@RequestBody greeting: Greeting) = greetingRepository.findByControlNumber(greeting.controlNumber)
+        .doFirst { println("POST GREETING $greeting") }
         .flatMap { greetingRepository.save(Greeting(greeting, it)) }
         .switchIfEmpty(greetingService.setCompanyIdAndSave(greeting))
 

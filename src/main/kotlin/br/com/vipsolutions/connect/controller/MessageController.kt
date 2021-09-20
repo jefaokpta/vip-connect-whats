@@ -34,7 +34,7 @@ class MessageController(
 
     @PostMapping
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
-        //println(payload)
+        println(payload)
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
