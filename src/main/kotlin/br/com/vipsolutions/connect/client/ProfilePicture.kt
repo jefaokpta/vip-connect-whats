@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -14,7 +15,7 @@ import java.net.http.HttpResponse
 
 fun getProfilePicture(instanceId: Int, remoteJid: String): WhatsProfilePicture {
     val request = HttpRequest.newBuilder(URI("http://localhost:$instanceId/whats/profile/picture/$remoteJid"))
-        .GET().build()
+        .GET().timeout(Duration.ofSeconds(5)).build()
     try {
         HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
             return Gson().fromJson(response.body(), WhatsProfilePicture::class.java)
