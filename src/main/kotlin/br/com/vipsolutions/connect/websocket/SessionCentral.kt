@@ -10,6 +10,7 @@ import br.com.vipsolutions.connect.util.objectToJson
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -89,7 +90,7 @@ fun removeAgentSession(session: WebSocketSession){
         companyMap.value.forEach{sessionMap ->
             if (session == sessionMap.value.session){
                 SessionCentral.agents[companyMap.key]?.remove(sessionMap.key)
-                println("removido agente chave ${sessionMap.key} do mapa id ${companyMap.key}")
+                println("removido agente chave ${sessionMap.key} do mapa id ${companyMap.key} - ${LocalDateTime.now()}")
                 return
             }
         }
