@@ -10,7 +10,6 @@ import java.util.*
  */
 
 fun createInstance(company: Company): CompanyInfo {
-    //val nodeWhatsVersion = Optional.ofNullable(System.getenv("NODE_WHATS_VERSION")).orElse("1.0")
     val command = "docker run -d --name=whats-${company.id} -p${company.instance}:3000 -e COMPANY=${company.id} -e API_PORT=${company.instance} --restart=on-failure -v /opt/whatsMediaHost:/whatsMedia jefaokpta/node-whats:${EnvironmentVarCenter.environmentVar.nodeWhatsVersion}"
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}

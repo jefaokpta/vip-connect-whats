@@ -45,7 +45,6 @@ class MessageController(
         val instanceId = jsonObject["instanceId"].asInt
 
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
-        //println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(Date.from(datetime.toInstant(ZoneOffset.of("-03:00")))))
 
         val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null, null, null, null)
         if(jsonObject["mediaMessage"].asBoolean){
