@@ -7,6 +7,7 @@ spring:
 server:
   error:
     include-stacktrace: on_param
+#  port: 9090
 #logging:
 #  level:
 #    org:
