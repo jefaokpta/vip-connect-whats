@@ -8,7 +8,6 @@ server:
   error:
     include-stacktrace: on_param
 #  port: 9090
-
 ## ATENCAO PRO AMBIENTE HOMOLOG: PORTA BANCO 3307 E PORTA WEB 9090!
 
 #logging:

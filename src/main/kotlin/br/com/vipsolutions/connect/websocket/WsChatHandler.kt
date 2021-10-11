@@ -130,7 +130,7 @@ class WsChatHandler(
             "ACTIVE_CHAT" -> {
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contactRepository.save(contact)
-                    .doOnNext { AnsweringUraCenter.contacts.containsKey(it.whatsapp) }
+                    .doOnNext { AnsweringUraCenter.contacts.remove(it.whatsapp) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
