@@ -8,11 +8,11 @@ import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.WsChatHandlerService
+import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.ContactCenter
 import br.com.vipsolutions.connect.util.contactsHaveNewMessages
 import br.com.vipsolutions.connect.util.objectToJson
 import com.google.gson.Gson
-import kotlinx.coroutines.reactive.collect
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler
 import org.springframework.web.reactive.socket.WebSocketMessage
@@ -30,13 +30,14 @@ class WsChatHandler(
     private val wsChatHandlerService: WsChatHandlerService
 ) : WebSocketHandler {
 
+    private val missingContactErrorMessage = "FALTA OBJ CONTATO"
+
     override fun handle(session: WebSocketSession) = session.send(session.receive()
         .flatMap { handleAgentActions(it, session) }
         .doFinally { removeAgentSession(session)}
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
-        //println(webSocketMessage.payloadAsText)
         val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
 
         return when(agentActionWs.action){
@@ -96,7 +97,7 @@ class WsChatHandler(
             }
 
             "PROFILE_PICTURE" -> {
-                var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTA OBJ CONTATO" })))
+                var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 val profilePicture = getProfilePicture(contact.instanceId, contact.whatsapp).picture?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "NAO FOI POSSSIVEL OBTER FOTO DO PERFIL" })))
                 contact.imgUrl = profilePicture
                 return contactRepository.save(contact)
@@ -104,7 +105,7 @@ class WsChatHandler(
             }
 
             "FINALIZE_ATTENDANCE" -> {
-                val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTA OBJ CONTATO" })))
+                val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.category = null
                 return contactRepository.save(contact)
                     .flatMap { uraRepository.findByCompany(contact.company) }
@@ -119,10 +120,23 @@ class WsChatHandler(
                 .flatMap{ wsChatHandlerService.contactsFilteredByLastCategory(it, agentActionWs.agent) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
-            "TEST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
+            "LIST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
                 .flatMap { it.collectList() }
+                .map (::contactsHaveNewMessages)
+                .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
+
+            "ACTIVE_CHAT" -> {
+                var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
+                contactRepository.save(contact)
+                    .doOnNext { AnsweringUraCenter.contacts.containsKey(it.whatsapp) }
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
+                    .doFinally {
+                        unlockContact(contact, agentActionWs.agent).subscribe()
+                        lockContact(contact, agentActionWs.agent).subscribe()
+                    }
+            }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }
