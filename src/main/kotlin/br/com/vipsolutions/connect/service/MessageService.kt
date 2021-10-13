@@ -72,11 +72,10 @@ class MessageService(
     fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int, name: String): Mono<Contact> {
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
-            //println("IMAGEM DO PERFIL: ${profilePicture.picture}")
-            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture, null, null, null, 0))
+            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture, null, null, null, 0, null))
         }
         println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
-        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null, null, null, 0))
+        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null, null, null, 0, null))
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
@@ -111,8 +110,6 @@ class MessageService(
     private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat,company: Long): Mono<Contact>{
         if (WaitContactNameCenter.names.containsKey(remoteJid)){
             WaitContactNameCenter.names.remove(remoteJid)
-            //WaitContactNameCenter.names[remoteJid] = whatsChat.text
-            //sendButtonsMessage(remoteJid, whatsChat.text, instanceId, greeting)
             return prepareContactToSave(remoteJid, company, instanceId, whatsChat.text)
         } else {
             WaitContactNameCenter.names[remoteJid] = ""
@@ -138,7 +135,11 @@ class MessageService(
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
-                return Optional.of(contact.apply { category = answer.departmentId; lastCategory = answer.departmentId })
+                return Optional.of(contact.apply {
+                    category = answer.departmentId
+                    lastCategory = answer.departmentId
+                    protocol = System.currentTimeMillis()
+                })
             }
         }
         return Optional.empty()

@@ -107,6 +107,7 @@ class WsChatHandler(
             "FINALIZE_ATTENDANCE" -> {
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.category = null
+                contact.protocol = null
                 return contactRepository.save(contact)
                     .flatMap { uraRepository.findByCompany(contact.company) }
                     .map { Optional.ofNullable(it.finalMessage) }
