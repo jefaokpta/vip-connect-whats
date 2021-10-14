@@ -8,10 +8,7 @@ import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.WsChatHandlerService
-import br.com.vipsolutions.connect.util.AnsweringUraCenter
-import br.com.vipsolutions.connect.util.ContactCenter
-import br.com.vipsolutions.connect.util.contactsHaveNewMessages
-import br.com.vipsolutions.connect.util.objectToJson
+import br.com.vipsolutions.connect.util.*
 import com.google.gson.Gson
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler
@@ -130,13 +127,22 @@ class WsChatHandler(
 
             "ACTIVE_CHAT" -> {
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
-                contactRepository.save(contact)
+                contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
+                contactRepository.save(generateProtocol(contact))
                     .doOnNext { AnsweringUraCenter.contacts.remove(it.whatsapp) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
                         lockContact(contact, agentActionWs.agent).subscribe()
                     }
+            }
+
+            "TRANSFER_CONTACT" -> {
+                var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
+                contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
+                contactRepository.save(contact)
+                    .doOnNext { unlockContact(it, agentActionWs.agent) }
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
             }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))

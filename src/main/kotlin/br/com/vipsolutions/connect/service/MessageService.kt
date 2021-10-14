@@ -11,6 +11,7 @@ import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.util.addContactCenter
+import br.com.vipsolutions.connect.util.generateProtocol
 import br.com.vipsolutions.connect.websocket.SessionCentral
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
@@ -135,11 +136,10 @@ class MessageService(
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
-                return Optional.of(contact.apply {
+                return Optional.of(generateProtocol(contact.apply {
                     category = answer.departmentId
                     lastCategory = answer.departmentId
-                    protocol = System.currentTimeMillis()
-                })
+                }))
             }
         }
         return Optional.empty()
