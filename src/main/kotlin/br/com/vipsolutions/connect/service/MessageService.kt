@@ -82,6 +82,7 @@ class MessageService(
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
+        if (!busy) fromAgent = false
         lastMessageId = messageId
         lastMessageTime = datetime
     })

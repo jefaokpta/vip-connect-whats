@@ -96,7 +96,7 @@ class MessageController(
         else {
             contactRepository.findByWhatsapp(remoteJid)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
-                .flatMap { messageService.verifyMessageCategory(it.apply { fromAgent = false }, whatsChat) }
+                .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, null, null,
                     null, null, 0, null,false)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
