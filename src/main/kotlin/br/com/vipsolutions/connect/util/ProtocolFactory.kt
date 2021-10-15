@@ -7,4 +7,9 @@ import br.com.vipsolutions.connect.model.Contact
  * Date: 14/10/21
  */
 
-fun generateProtocol(contact: Contact) = contact.apply { protocol = System.currentTimeMillis() }
+fun generateProtocol(contact: Contact): Contact {
+    if (contact.protocol == null) {
+        contact.protocol = System.currentTimeMillis()
+    }
+    return contact
+}

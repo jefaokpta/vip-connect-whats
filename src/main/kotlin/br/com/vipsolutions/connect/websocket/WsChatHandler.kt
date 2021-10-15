@@ -43,6 +43,7 @@ class WsChatHandler(
                 .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
                 .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
+                .map { contacts -> contacts.filter { !it.fromAgent }}
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
@@ -128,6 +129,7 @@ class WsChatHandler(
             "ACTIVE_CHAT" -> {
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
+                contact.fromAgent = true
                 contactRepository.save(generateProtocol(contact))
                     .doOnNext { AnsweringUraCenter.contacts.remove(it.whatsapp) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
@@ -141,8 +143,12 @@ class WsChatHandler(
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
                 contactRepository.save(contact)
-                    .doOnNext { unlockContact(it, agentActionWs.agent) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
+                    .doFinally {
+                        unlockContact(contact, agentActionWs.agent).subscribe()
+                        alertNewMessageToAgents(contact).subscribe()
+                        wsChatHandlerService.sendTransferMessage(contact).subscribe()
+                    }
             }
 
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))

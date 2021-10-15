@@ -23,7 +23,15 @@ data class Contact(
     var category: Long?,
     var lastCategory: Long,
     var protocol: Long?,
+    var fromAgent: Boolean,
 ) {
+    @Transient
+    var busy = false
+    @Transient
+    var newMessage = false
+    @Transient
+    var newMessageQtde = 0
+
     constructor(contact: Contact): this(
         contact.id,
         contact.name,
@@ -35,12 +43,7 @@ data class Contact(
         contact.lastMessageTime,
         contact.category,
         contact.lastCategory,
-        contact.protocol
+        contact.protocol,
+        contact.fromAgent
     )
-    @Transient
-    var busy = false
-    @Transient
-    var newMessage = false
-    @Transient
-    var newMessageQtde = 0
 }
