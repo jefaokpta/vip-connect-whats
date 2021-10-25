@@ -74,11 +74,11 @@ class MessageService(
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
             return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture,
-                null, null, null, 0, null, false))
+                null, null, null, 0, null, false, false))
         }
         println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
         return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null,
-            null, null, 0, null, false))
+            null, null, 0, null, false, false))
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {

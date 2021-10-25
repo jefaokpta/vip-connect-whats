@@ -86,6 +86,12 @@ class WsChatHandler(
             "UNLOCK_CONTACT" -> {
                 if (agentActionWs.contact !== null && agentActionWs.agent > 0){
                     agentActionWs.action = "UNLOCK_CONTACT_RESPONSE"
+                    agentActionWs.contact!!.isNewProtocol = false
+                    if(agentActionWs.contact!!.isNewProtocol){
+                        return contactRepository.save(agentActionWs.contact!!)
+                            .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
+                            .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
+                    }
                     return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                         .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
                 }
@@ -106,6 +112,7 @@ class WsChatHandler(
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.category = null
                 contact.protocol = null
+                contact.isNewProtocol = false
                 return contactRepository.save(contact)
                     .flatMap { uraRepository.findByCompany(contact.company) }
                     .map { Optional.ofNullable(it.finalMessage) }
@@ -142,6 +149,7 @@ class WsChatHandler(
             "TRANSFER_CONTACT" -> {
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
+                contact.isNewProtocol = false
                 contactRepository.save(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .doFinally {

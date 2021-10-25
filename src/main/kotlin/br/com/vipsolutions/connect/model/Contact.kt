@@ -24,6 +24,7 @@ data class Contact(
     var lastCategory: Long,
     var protocol: Long?,
     var fromAgent: Boolean,
+    var isNewProtocol: Boolean,
 ) {
     @Transient
     var busy = false
@@ -44,6 +45,7 @@ data class Contact(
         contact.category,
         contact.lastCategory,
         contact.protocol,
-        contact.fromAgent
+        contact.fromAgent,
+        contact.isNewProtocol
     )
 }

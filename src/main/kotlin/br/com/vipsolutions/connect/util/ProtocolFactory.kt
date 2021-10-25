@@ -9,6 +9,7 @@ import br.com.vipsolutions.connect.model.Contact
 
 fun generateProtocol(contact: Contact): Contact {
     if (contact.protocol == null) {
+        contact.isNewProtocol = true
         contact.protocol = System.currentTimeMillis()
     }
     return contact
