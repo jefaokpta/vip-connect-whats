@@ -86,8 +86,8 @@ class WsChatHandler(
             "UNLOCK_CONTACT" -> {
                 if (agentActionWs.contact !== null && agentActionWs.agent > 0){
                     agentActionWs.action = "UNLOCK_CONTACT_RESPONSE"
-                    agentActionWs.contact!!.isNewProtocol = false
                     if(agentActionWs.contact!!.isNewProtocol){
+                        agentActionWs.contact!!.isNewProtocol = false
                         return contactRepository.save(agentActionWs.contact!!)
                             .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
                             .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
