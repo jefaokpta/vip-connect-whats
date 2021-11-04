@@ -5,6 +5,7 @@ import br.com.vipsolutions.connect.model.FileUpload
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.WhatsMessage
 import br.com.vipsolutions.connect.model.robot.Greeting
+import br.com.vipsolutions.connect.model.robot.Quiz
 import br.com.vipsolutions.connect.model.robot.Ura
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -23,10 +24,13 @@ import java.net.http.HttpResponse
  * Date: 2021-04-26
  */
 
+const val CONTENT_TYPE = "Content-Type"
+const val APP_JSON = "application/json"
+
 fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
     val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(WhatsMessage(whatsChat.text, contact.whatsapp))))
-        .header("Content-Type", "application/json")
+        .header(CONTENT_TYPE, APP_JSON)
         .build()
     try {
         HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
@@ -44,7 +48,7 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
     val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
-        .header("Content-Type", "application/json")
+        .header(CONTENT_TYPE, APP_JSON)
         .build()
     try {
         HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
@@ -55,14 +59,16 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
     }
 }
 
-fun sendButtonsMessage(remoteJid: String, name: String, instance: Int, greeting: Greeting){
+fun sendQuizButtonsMessage(remoteJid: String, instance: Int, quiz: Quiz){
     val json = JsonObject()
     json.addProperty("remoteJid", remoteJid)
-    json.addProperty("btnText", greeting.btnText.replace("$:name", name))
-    json.addProperty("btnFooterText", greeting.btnFooterText)
+    json.addProperty("btnText", quiz.question)
+    if (!quiz.btnFooterText.isNullOrBlank()){
+        json.addProperty("btnFooterText", quiz.btnFooterText)
+    }
     val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages/buttons"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
-        .header("Content-Type", "application/json")
+        .header(APP_JSON, APP_JSON)
         .build()
     HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
         println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
@@ -72,25 +78,8 @@ fun sendButtonsMessage(remoteJid: String, name: String, instance: Int, greeting:
 fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http://localhost:${fileUpload.instanceId}").build()
     .post()
     .uri("/whats/messages/medias")
-    .header("Content-Type", "application/json")
+    .header(APP_JSON, APP_JSON)
     .body(Mono.just(fileUpload), FileUpload::class.java)
     .retrieve()
     .bodyToMono(Void::class.java)
     .doFirst { println("SEND MEDIA MSG $fileUpload") }
-
-//fun getRobotUra(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
-//    .get()
-//    .uri("/robot/ura/$company")
-//    .header("Content-Type", "application/json")
-//    .retrieve()
-//    .bodyToMono(Ura::class.java)
-//    .onErrorResume { Mono.empty() }
-////    .log()
-//
-//fun getRobotGreeting(company: Long) = WebClient.builder().baseUrl("http://localhost:8081").build()
-//    .get()
-//    .uri("/robot/greeting/$company")
-//    .header("Content-Type", "application/json")
-//    .retrieve()
-//    .bodyToMono(Greeting::class.java)
-//    .onErrorResume { Mono.empty() }

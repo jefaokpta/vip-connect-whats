@@ -22,13 +22,14 @@ class WebsocketConfig(
     private val whatsChatRepository: WhatsChatRepository,
     private val authWhatsappRepository: AuthWhatsappRepository,
     private val uraRepository: UraRepository,
-    private val wsChatHandlerService: WsChatHandlerService
+    private val wsChatHandlerService: WsChatHandlerService,
+    private val quizRepository: QuizRepository,
 ) {
 
     @Bean
     fun handlerMapping(): HandlerMapping? {
         val map: MutableMap<String, WebSocketHandler?> = HashMap()
-        map["/ws/chats"] = WsChatHandler(contactRepository, companyRepository, whatsChatRepository, uraRepository, wsChatHandlerService)
+        map["/ws/chats"] = WsChatHandler(contactRepository, companyRepository, whatsChatRepository, uraRepository, wsChatHandlerService, quizRepository)
         map["/ws/register"] = WsRegisterHandler(companyService, authWhatsappRepository)
         val mapping = SimpleUrlHandlerMapping()
         mapping.urlMap = map

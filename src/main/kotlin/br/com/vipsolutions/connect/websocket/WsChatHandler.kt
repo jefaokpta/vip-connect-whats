@@ -1,12 +1,10 @@
 package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.client.getProfilePicture
+import br.com.vipsolutions.connect.client.sendQuizButtonsMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
-import br.com.vipsolutions.connect.repository.CompanyRepository
-import br.com.vipsolutions.connect.repository.ContactRepository
-import br.com.vipsolutions.connect.repository.UraRepository
-import br.com.vipsolutions.connect.repository.WhatsChatRepository
+import br.com.vipsolutions.connect.repository.*
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.*
 import com.google.gson.Gson
@@ -24,7 +22,8 @@ class WsChatHandler(
     private val companyRepository: CompanyRepository,
     private val whatsChatRepository: WhatsChatRepository,
     private val uraRepository: UraRepository,
-    private val wsChatHandlerService: WsChatHandlerService
+    private val wsChatHandlerService: WsChatHandlerService,
+    private val quizRepository: QuizRepository,
 ) : WebSocketHandler {
 
     private val missingContactErrorMessage = "FALTA OBJ CONTATO"
@@ -114,10 +113,12 @@ class WsChatHandler(
                 contact.protocol = null
                 contact.isNewProtocol = false
                 return contactRepository.save(contact)
-                    .flatMap { uraRepository.findByCompany(contact.company) }
-                    .map { Optional.ofNullable(it.finalMessage) }
-                    .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
-                    .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
+                    .flatMap { quizRepository.findByCompany(contact.company) }
+                    .map { sendQuizButtonsMessage(contact.whatsapp, contact.instanceId, it) }
+//                    .flatMap { uraRepository.findByCompany(contact.company) }
+//                    .map { Optional.ofNullable(it.finalMessage) }
+//                    .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
+//                    .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
                     .doOnNext { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }
