@@ -21,9 +21,7 @@ class WsChatHandler(
     private val contactRepository: ContactRepository,
     private val companyRepository: CompanyRepository,
     private val whatsChatRepository: WhatsChatRepository,
-    private val uraRepository: UraRepository,
     private val wsChatHandlerService: WsChatHandlerService,
-    private val quizRepository: QuizRepository,
 ) : WebSocketHandler {
 
     private val missingContactErrorMessage = "FALTA OBJ CONTATO"
@@ -113,12 +111,7 @@ class WsChatHandler(
                 contact.protocol = null
                 contact.isNewProtocol = false
                 return contactRepository.save(contact)
-                    .flatMap { quizRepository.findByCompany(contact.company) }
-                    .map { sendQuizButtonsMessage(contact.whatsapp, contact.instanceId, it) }
-//                    .flatMap { uraRepository.findByCompany(contact.company) }
-//                    .map { Optional.ofNullable(it.finalMessage) }
-//                    .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
-//                    .switchIfEmpty(Mono.just(println("SEM ADEUS AO FINALIZAR ATENDIMENTO")))
+                    .flatMap (wsChatHandlerService::sendQuizOrFinalizeMsg)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
                     .doOnNext { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }

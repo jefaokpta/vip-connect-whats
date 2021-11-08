@@ -14,4 +14,7 @@ interface QuizRepository: ReactiveCrudRepository<Quiz, Long> {
 
     fun findByControlNumber(controlNumber: Long): Mono<Quiz>
     fun findByCompany(company: Long): Mono<Quiz>
+
+    fun existsByCompany(company: Long): Mono<Boolean>
+
 }

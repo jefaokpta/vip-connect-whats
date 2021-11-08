@@ -59,26 +59,26 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
     }
 }
 
-fun sendQuizButtonsMessage(remoteJid: String, instance: Int, quiz: Quiz){
+fun sendQuizButtonsMessage(contact: Contact, quiz: Quiz) {
     val json = JsonObject()
-    json.addProperty("remoteJid", remoteJid)
+    json.addProperty("remoteJid", contact.whatsapp)
     json.addProperty("btnText", quiz.question)
     if (!quiz.btnFooterText.isNullOrBlank()){
         json.addProperty("btnFooterText", quiz.btnFooterText)
     }
-    val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages/buttons"))
+    val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages/buttons"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
-        .header(APP_JSON, APP_JSON)
+        .header(CONTENT_TYPE, APP_JSON)
         .build()
     HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println("Enviado ${json.toString()} RETORNO ${response.statusCode()}")
+        println("Enviado $json RETORNO ${response.statusCode()}")
     }
 }
 
 fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http://localhost:${fileUpload.instanceId}").build()
     .post()
     .uri("/whats/messages/medias")
-    .header(APP_JSON, APP_JSON)
+    .header(CONTENT_TYPE, APP_JSON)
     .body(Mono.just(fileUpload), FileUpload::class.java)
     .retrieve()
     .bodyToMono(Void::class.java)
