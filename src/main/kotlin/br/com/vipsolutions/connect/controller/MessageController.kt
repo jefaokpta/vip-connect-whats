@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
+import br.com.vipsolutions.connect.client.sendQuizAnswer
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
@@ -7,6 +8,8 @@ import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
+import br.com.vipsolutions.connect.service.WsChatHandlerService
+import br.com.vipsolutions.connect.util.AnsweringQuizCenter
 import br.com.vipsolutions.connect.util.AnsweringUraCenter
 import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
@@ -18,6 +21,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -29,7 +33,7 @@ class MessageController(
     private val whatsChatRepository: WhatsChatRepository,
     private val contactRepository: ContactRepository,
     private val messageService: MessageService,
-    private val greetingRepository: GreetingRepository
+    private val wsChatHandlerService: WsChatHandlerService,
 ) {
 
     @PostMapping
@@ -114,24 +118,15 @@ class MessageController(
         val company = jsonObject["company"].asLong
         val instanceId = jsonObject["instanceId"].asInt
 
-        if (!WaitContactNameCenter.names.containsKey(remoteJid)) return Mono.empty() // PARA ENGRACADINHOS Q APERTAREM SIM DEPOIS NAO
-
-        if (selectedBtn > 0){
-            val name = WaitContactNameCenter.names.remove(remoteJid)?: "Desconhecido"
-            val whatsChat = WhatsChat(
-                "", "", "Nome $name confirmado.", false, 0, LocalDateTime.now(),
-                false, null, null, null, null, null
-            )
-            AnsweringUraCenter.contacts[remoteJid] = ""
-            return messageService.prepareContactToSave(remoteJid, company, instanceId, name)
-                .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
-                .then()
-                //.log()
-        }
-        return greetingRepository.findByCompany(company)
-            .switchIfEmpty(greetingRepository.findByCompany(0))
-            .doOnNext { if (!it.btnNegative.isNullOrBlank()) sendTextMessage(remoteJid, it.btnNegative, instanceId) }
-            .map { sendTextMessage(remoteJid, it.greet, instanceId) }
+        return Optional.ofNullable(AnsweringQuizCenter.quizzes[remoteJid])
+            .map {
+                sendQuizAnswer(it, selectedBtn)
+                AnsweringQuizCenter.quizzes.remove(remoteJid)
+                println("QUIZ RESPONDIDO $remoteJid")
+                it
+            }
+            .map { wsChatHandlerService.finalizeAttendance(it.contact) }
+            .orElse(Mono.empty())
             .then()
     }
 

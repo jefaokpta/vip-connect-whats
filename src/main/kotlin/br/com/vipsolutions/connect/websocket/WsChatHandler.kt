@@ -107,11 +107,7 @@ class WsChatHandler(
 
             "FINALIZE_ATTENDANCE" -> {
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
-                contact.category = null
-                contact.protocol = null
-                contact.isNewProtocol = false
-                return contactRepository.save(contact)
-                    .flatMap (wsChatHandlerService::sendQuizOrFinalizeMsg)
+                wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
                     .doOnNext { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }

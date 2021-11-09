@@ -1,9 +1,6 @@
 package br.com.vipsolutions.connect.client
 
-import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.FileUpload
-import br.com.vipsolutions.connect.model.WhatsChat
-import br.com.vipsolutions.connect.model.WhatsMessage
+import br.com.vipsolutions.connect.model.*
 import br.com.vipsolutions.connect.model.robot.Greeting
 import br.com.vipsolutions.connect.model.robot.Quiz
 import br.com.vipsolutions.connect.model.robot.Ura
@@ -26,9 +23,11 @@ import java.net.http.HttpResponse
 
 const val CONTENT_TYPE = "Content-Type"
 const val APP_JSON = "application/json"
+const val CONTAINER_NODE = "http://localhost"
+const val SERVER_VIP = "https://callcenter.vipsolutions.com.br"
 
 fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
-    val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages"))
+    val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(Gson().toJson(WhatsMessage(whatsChat.text, contact.whatsapp))))
         .header(CONTENT_TYPE, APP_JSON)
         .build()
@@ -45,7 +44,7 @@ fun sendTextMessage(remoteJid: String, message: String, instance: Int){
     val json = JsonObject()
     json.addProperty("remoteJid", remoteJid)
     json.addProperty("message", message)
-    val request = HttpRequest.newBuilder(URI("http://localhost:$instance/whats/messages"))
+    val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:$instance/whats/messages"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
 //            .POST(HttpRequest.BodyPublishers.ofString(jacksonObjectMapper().writeValueAsString(data)))
         .header(CONTENT_TYPE, APP_JSON)
@@ -66,16 +65,38 @@ fun sendQuizButtonsMessage(contact: Contact, quiz: Quiz) {
     if (!quiz.btnFooterText.isNullOrBlank()){
         json.addProperty("btnFooterText", quiz.btnFooterText)
     }
-    val request = HttpRequest.newBuilder(URI("http://localhost:${contact.instanceId}/whats/messages/buttons"))
+    val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/messages/buttons"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
         .header(CONTENT_TYPE, APP_JSON)
         .build()
-    HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-        println("Enviado $json RETORNO ${response.statusCode()}")
+    try {
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+            println("Enviado $json RETORNO ${response.statusCode()}")
+        }
+    }catch (ex: Exception){
+        println("DEU RUIM AO ENVIAR BTN MSG PRO NODE INSTANCE_ID ${contact.instanceId} - ${ex.message}")
     }
 }
 
-fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("http://localhost:${fileUpload.instanceId}").build()
+fun sendQuizAnswer(contactAndQuiz: ContactAndQuiz, selectedBtn: Int){
+    val json = JsonObject()
+    json.addProperty("protocol", contactAndQuiz.contact.protocol)
+    json.addProperty("controlNumber", contactAndQuiz.quiz.controlNumber)
+    json.addProperty("score", selectedBtn)
+    val request = HttpRequest.newBuilder(URI("$SERVER_VIP/whats-api/protocol-score"))
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+        .header(CONTENT_TYPE, APP_JSON)
+        .build()
+    try {
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+            println("Enviado $json RETORNO ${response.statusCode()}")
+        }
+    }catch (ex: Exception){
+        println("DEU RUIM AO ENVIAR QUIZ ANSWER PRO SERVER VIP - ${ex.message}")
+    }
+}
+
+fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("$CONTAINER_NODE:${fileUpload.instanceId}").build()
     .post()
     .uri("/whats/messages/medias")
     .header(CONTENT_TYPE, APP_JSON)

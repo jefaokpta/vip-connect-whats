@@ -4,12 +4,13 @@ import br.com.vipsolutions.connect.client.sendQuizButtonsMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ContactAndQuiz
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.QuizRepository
 import br.com.vipsolutions.connect.repository.UraOptionRepository
 import br.com.vipsolutions.connect.repository.UraRepository
+import br.com.vipsolutions.connect.util.AnsweringQuizCenter
 import br.com.vipsolutions.connect.websocket.SessionCentral
-import kotlinx.coroutines.reactive.collect
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import java.util.*
@@ -30,18 +31,27 @@ class WsChatHandlerService(
         .flatMap { hasQuiz ->
             if (hasQuiz){
                 quizRepository.findByCompany(contact.company)
+                    .doOnNext { AnsweringQuizCenter.quizzes[contact.whatsapp] = ContactAndQuiz(contact, it) }
                     .map { sendQuizButtonsMessage(contact, it) }
             }else{
-                uraRepository.findByCompany(contact.company)
-                    .map { Optional.ofNullable(it.finalMessage) }
-                    .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
+                finalizeAttendance(contact)
             }
         }
 
+    fun finalizeAttendance(contact: Contact): Mono<Unit> {
+        contact.category = null
+        contact.protocol = null
+        contact.isNewProtocol = false
+        return contactRepository.save(contact)
+            .flatMap { uraRepository.findByCompany(it.company) }
+            .map { Optional.ofNullable(it.finalMessage) }
+            .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
+    }
+
     fun contactsFilteredByLastCategory(company: Company, agent: Int): Mono<MutableList<Contact>> {
-        val agentCategorys = SessionCentral.agents[company.id]?.get(agent)?.categories ?: return Mono.empty()
+        val agentCategories = SessionCentral.agents[company.id]?.get(agent)?.categories ?: return Mono.empty()
         return contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id)
-            .filter { agentCategorys.contains(it.lastCategory) }
+            .filter { agentCategories.contains(it.lastCategory) }
             .collectList()
     }
 
