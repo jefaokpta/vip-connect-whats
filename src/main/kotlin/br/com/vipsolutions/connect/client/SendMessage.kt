@@ -21,10 +21,10 @@ import java.net.http.HttpResponse
  * Date: 2021-04-26
  */
 
-const val CONTENT_TYPE = "Content-Type"
-const val APP_JSON = "application/json"
-const val CONTAINER_NODE = "http://localhost"
-const val SERVER_VIP = "https://callcenter.vipsolutions.com.br"
+private const val CONTENT_TYPE = "Content-Type"
+private const val APP_JSON = "application/json"
+private const val CONTAINER_NODE = "http://localhost"
+private const val SERVER_VIP = "https://callcenter.vipsolutions.com.br"
 
 fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
     val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/messages"))
