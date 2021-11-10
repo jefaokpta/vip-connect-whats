@@ -37,7 +37,7 @@ class WsChatHandlerService(
                     .map { sendQuizButtonsMessage(contact, it) }
             }else{
                 resetContact(contact)
-                    .map (::finalizeAttendance)
+                    .flatMap (::finalizeAttendance)
             }
         }
 
