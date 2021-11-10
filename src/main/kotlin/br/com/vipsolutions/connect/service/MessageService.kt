@@ -8,10 +8,7 @@ import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.UraRepository
-import br.com.vipsolutions.connect.util.AnsweringUraCenter
-import br.com.vipsolutions.connect.util.WaitContactNameCenter
-import br.com.vipsolutions.connect.util.addContactCenter
-import br.com.vipsolutions.connect.util.generateProtocol
+import br.com.vipsolutions.connect.util.*
 import br.com.vipsolutions.connect.websocket.SessionCentral
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
@@ -63,6 +60,8 @@ class MessageService(
                 .flatMap { buildUraMessageNoInitialMessage(ura, contact) }
         }
         AnsweringUraCenter.contacts[whatsChat.remoteJid] = ""
+        Optional.ofNullable(AnsweringQuizCenter.quizzes.remove(contact.whatsapp))
+            .map { sendQuizAnswerToVip(it, 0) }
         return buildUraMessage(ura, contact)
     }
 

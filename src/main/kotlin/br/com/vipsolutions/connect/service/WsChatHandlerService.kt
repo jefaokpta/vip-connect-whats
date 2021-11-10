@@ -30,23 +30,27 @@ class WsChatHandlerService(
     fun sendQuizOrFinalizeMsg(contact: Contact) = quizRepository.existsByCompany(contact.company)
         .flatMap { hasQuiz ->
             if (hasQuiz){
-                quizRepository.findByCompany(contact.company)
-                    .doOnNext { AnsweringQuizCenter.quizzes[contact.whatsapp] = ContactAndQuiz(contact, it) }
+                val contactCopy = contact.copy()
+                resetContact(contact)
+                    .flatMap { quizRepository.findByCompany(it.company) }
+                    .doOnNext { AnsweringQuizCenter.quizzes[contact.whatsapp] = ContactAndQuiz(contactCopy, it) }
                     .map { sendQuizButtonsMessage(contact, it) }
             }else{
-                finalizeAttendance(contact)
+                resetContact(contact)
+                    .map (::finalizeAttendance)
             }
         }
 
-    fun finalizeAttendance(contact: Contact): Mono<Unit> {
+    private fun resetContact(contact: Contact): Mono<Contact> {
         contact.category = null
         contact.protocol = null
         contact.isNewProtocol = false
         return contactRepository.save(contact)
-            .flatMap { uraRepository.findByCompany(it.company) }
-            .map { Optional.ofNullable(it.finalMessage) }
-            .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
     }
+
+    fun finalizeAttendance(contact: Contact) = uraRepository.findByCompany(contact.company)
+        .map { Optional.ofNullable(it.finalMessage) }
+        .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
 
     fun contactsFilteredByLastCategory(company: Company, agent: Int): Mono<MutableList<Contact>> {
         val agentCategories = SessionCentral.agents[company.id]?.get(agent)?.categories ?: return Mono.empty()

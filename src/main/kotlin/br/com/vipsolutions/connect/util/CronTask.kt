@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.util
 
-import br.com.vipsolutions.connect.client.sendQuizAnswer
+import br.com.vipsolutions.connect.client.sendQuizAnswerToVip
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import org.springframework.scheduling.annotation.Scheduled
@@ -31,12 +31,12 @@ class CronTask(
         println("APAGANDO ATRASADOS ${LocalDateTime.now()}")
         val quizzes = AnsweringQuizCenter.quizzes.toMap()
         quizzes.values.forEach {
-            println("TESTANDO ${it.contact.whatsapp} - ${it.dateTime}")
+            println("TESTANDO ${it.contact}")
             println("SOMA TA DANDO QUANTO? ${it.dateTime.plusMinutes(5)}")
             if (it.dateTime.plusMinutes(5).isBefore(LocalDateTime.now())){
                 println("APAGAREI ${it.contact.whatsapp}")
                 AnsweringQuizCenter.quizzes.remove(it.contact.whatsapp)
-                sendQuizAnswer(it, 0)
+                sendQuizAnswerToVip(it, 0)
                 wsChatHandlerService.finalizeAttendance(it.contact).subscribe()
             }
         }

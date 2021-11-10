@@ -1,17 +1,13 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.client.sendQuizAnswer
-import br.com.vipsolutions.connect.client.sendTextMessage
+import br.com.vipsolutions.connect.client.sendQuizAnswerToVip
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.repository.ContactRepository
-import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.AnsweringQuizCenter
-import br.com.vipsolutions.connect.util.AnsweringUraCenter
-import br.com.vipsolutions.connect.util.WaitContactNameCenter
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -120,7 +116,7 @@ class MessageController(
 
         return Optional.ofNullable(AnsweringQuizCenter.quizzes[remoteJid])
             .map {
-                sendQuizAnswer(it, selectedBtn)
+                sendQuizAnswerToVip(it, selectedBtn)
                 AnsweringQuizCenter.quizzes.remove(remoteJid)
                 println("QUIZ RESPONDIDO $remoteJid")
                 it

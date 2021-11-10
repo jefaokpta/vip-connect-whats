@@ -78,11 +78,11 @@ fun sendQuizButtonsMessage(contact: Contact, quiz: Quiz) {
     }
 }
 
-fun sendQuizAnswer(contactAndQuiz: ContactAndQuiz, selectedBtn: Int){
+fun sendQuizAnswerToVip(contactAndQuiz: ContactAndQuiz, selectedBtn: Int){
     val json = JsonObject()
     json.addProperty("protocol", contactAndQuiz.contact.protocol)
     json.addProperty("controlNumber", contactAndQuiz.quiz.controlNumber)
-    json.addProperty("score", selectedBtn)
+    json.addProperty("score", selectedBtn.toString())
     val request = HttpRequest.newBuilder(URI("$SERVER_VIP/whats-api/protocol-score"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
         .header(CONTENT_TYPE, APP_JSON)
