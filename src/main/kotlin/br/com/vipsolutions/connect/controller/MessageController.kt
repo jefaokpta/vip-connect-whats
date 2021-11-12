@@ -46,7 +46,7 @@ class MessageController(
 
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
 
-        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime, false, null, null, null, null, null)
+        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime)
         if(jsonObject["mediaMessage"].asBoolean){
             whatsChat.media = true
             whatsChat.mediaType = jsonObject["mediaType"].asString
@@ -78,28 +78,24 @@ class MessageController(
 
 
         return if(fromMe){
-            whatsChatRepository.findById(messageId)
+            contactRepository.findByWhatsapp(whatsChat.remoteJid)
+                .map { contactOnAttendance(it, whatsChat.apply { protocol = it.protocol })}
+                .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
+                .flatMap { whatsChatRepository.findById(messageId) }
                 .flatMap { dbWhatsChat ->
                     dbWhatsChat.status = whatsChat.status
+                    dbWhatsChat.protocol = whatsChat.protocol
                     dbWhatsChat.isPersistable = false
                     whatsChatRepository.save(dbWhatsChat)
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
-                .doFinally {
-                    contactRepository.findByWhatsapp(whatsChat.remoteJid)
-                        .map { contactOnAttendance(it, whatsChat)}
-                        .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
-                        .subscribe()
-                }
-
         }
         else {
             contactRepository.findByWhatsapp(remoteJid)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
-                .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, null, null,
-                    null, null, 0, null,false, false)))
-                .flatMap { whatsChatRepository.save(whatsChat) }
+                .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, 0)))
+                .flatMap { whatsChatRepository.save(whatsChat.apply { protocol = it.protocol }) }
 //                .log()
         }
     }

@@ -20,11 +20,12 @@ data class WhatsChat(
     var status: Int,
     val datetime: LocalDateTime = LocalDateTime.now(),
     var media: Boolean = false,
-    var mediaType: String?,
-    var mediaUrl: String?,
-    var mediaCaption: String?,
-    var mediaFileLength: Long?,
-    var mediaPageCount: Int?
+    var mediaType: String? = null,
+    var mediaUrl: String? = null,
+    var mediaCaption: String? = null,
+    var mediaFileLength: Long? = null,
+    var mediaPageCount: Int? = null,
+    var protocol: Long? = null
 ): Persistable<String> {
     @Transient
     var isPersistable: Boolean = true

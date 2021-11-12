@@ -72,12 +72,10 @@ class MessageService(
     fun prepareContactToSave(remoteJid: String, company: Long, instanceId: Int, name: String): Mono<Contact> {
         val profilePicture = getProfilePicture(instanceId, remoteJid)
         if(profilePicture.picture !== null){
-            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, profilePicture.picture,
-                null, null, null, 0, null, false, false))
+            return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, 0, profilePicture.picture))
         }
         println("CAGOU AO PEGAR FOTO DO PERFIL ${profilePicture.errorMessage}")
-        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, null, null,
-            null, null, 0, null, false, false))
+        return contactRepository.save(Contact(0, name, remoteJid, company, instanceId, 0))
     }
 
     fun updateContactLastMessage(contact: Contact, datetime: LocalDateTime, messageId: String) = contactRepository.save(contact.apply {
