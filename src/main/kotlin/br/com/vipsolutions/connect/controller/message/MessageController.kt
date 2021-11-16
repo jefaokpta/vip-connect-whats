@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.controller
+package br.com.vipsolutions.connect.controller.message
 
 import br.com.vipsolutions.connect.client.sendQuizAnswerToVip
 import br.com.vipsolutions.connect.model.Contact

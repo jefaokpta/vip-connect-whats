@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.controller
+package br.com.vipsolutions.connect.controller.robot
 
 import br.com.vipsolutions.connect.model.robot.Ura
 import br.com.vipsolutions.connect.repository.UraOptionRepository

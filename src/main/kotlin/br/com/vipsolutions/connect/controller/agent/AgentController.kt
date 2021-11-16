@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.controller
+package br.com.vipsolutions.connect.controller.agent
 
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.websocket.SessionCentral
