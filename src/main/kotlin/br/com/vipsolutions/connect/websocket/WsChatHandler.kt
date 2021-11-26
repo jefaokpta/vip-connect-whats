@@ -1,7 +1,6 @@
 package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.client.getProfilePicture
-import br.com.vipsolutions.connect.client.sendQuizButtonsMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.*
@@ -64,7 +63,7 @@ class WsChatHandler(
                 }
 
             "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
-                .map { whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(it.whatsapp) }
+                .map { whatsChatRepository.findTop50ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company) }
                 .orElse(Flux.empty())
                 .collectList()
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }

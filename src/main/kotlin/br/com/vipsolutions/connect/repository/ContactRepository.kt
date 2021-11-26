@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
  */
 interface ContactRepository: ReactiveCrudRepository<Contact, Long> {
 
-    fun findByWhatsapp(whatsapp: String): Mono<Contact>
+    fun findByWhatsappAndCompany(whatsapp: String, company: Long): Mono<Contact>
 
     fun findAllByCompanyOrderByLastMessageTimeDesc(company: Long): Flux<Contact>
 }

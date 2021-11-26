@@ -46,7 +46,7 @@ class MessageController(
 
         val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
 
-        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, datetime)
+        val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, company, datetime)
         if(jsonObject["mediaMessage"].asBoolean){
             whatsChat.media = true
             whatsChat.mediaType = jsonObject["mediaType"].asString
@@ -78,7 +78,7 @@ class MessageController(
 
 
         return if(fromMe){
-            contactRepository.findByWhatsapp(whatsChat.remoteJid)
+            contactRepository.findByWhatsappAndCompany(whatsChat.remoteJid, company)
                 .map { contactOnAttendance(it, whatsChat.apply { protocol = it.protocol })}
                 .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
                 .flatMap { whatsChatRepository.findById(messageId) }
@@ -91,7 +91,7 @@ class MessageController(
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
         }
         else {
-            contactRepository.findByWhatsapp(remoteJid)
+            contactRepository.findByWhatsappAndCompany(remoteJid, company)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat) }
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, 0)))
@@ -122,8 +122,8 @@ class MessageController(
             .then()
     }
 
-    @GetMapping("/{remoteJid}")
-    fun chats(@PathVariable remoteJid: String, @RequestParam("limit") limit: Int): Flux<WhatsChat> {
-        return whatsChatRepository.findTop50ByRemoteJidOrderByDatetimeDesc(remoteJid)
+    @GetMapping("/{company}/{remoteJid}")
+    fun chats(@PathVariable remoteJid: String, @PathVariable company: Long): Flux<WhatsChat> {
+        return whatsChatRepository.findTop50ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid, company)
     }
 }

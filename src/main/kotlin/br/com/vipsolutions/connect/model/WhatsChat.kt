@@ -18,6 +18,7 @@ data class WhatsChat(
     var text: String,
     val fromMe: Boolean,
     var status: Int,
+    val company: Long,
     val datetime: LocalDateTime = LocalDateTime.now(),
     var media: Boolean = false,
     var mediaType: String? = null,
