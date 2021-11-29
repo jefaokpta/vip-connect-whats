@@ -1,15 +1,10 @@
 package br.com.vipsolutions.connect.client
 
 import br.com.vipsolutions.connect.model.*
-import br.com.vipsolutions.connect.model.robot.Greeting
 import br.com.vipsolutions.connect.model.robot.Quiz
-import br.com.vipsolutions.connect.model.robot.Ura
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientException
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.http.HttpClient
@@ -24,7 +19,6 @@ import java.net.http.HttpResponse
 private const val CONTENT_TYPE = "Content-Type"
 private const val APP_JSON = "application/json"
 private const val CONTAINER_NODE = "http://localhost"
-private const val SERVER_VIP = "https://callcenter.vipsolutions.com.br"
 
 fun sendTextMessage(whatsChat: WhatsChat, contact: Contact){
     val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/messages"))
@@ -83,7 +77,7 @@ fun sendQuizAnswerToVip(contactAndQuiz: ContactAndQuiz, selectedBtn: Int){
     json.addProperty("protocol", contactAndQuiz.contact.protocol)
     json.addProperty("controlNumber", contactAndQuiz.quiz.controlNumber)
     json.addProperty("score", selectedBtn.toString())
-    val request = HttpRequest.newBuilder(URI("$SERVER_VIP/whats-api/protocol-score"))
+    val request = HttpRequest.newBuilder(URI("${contactAndQuiz.quiz.urlServer}/whats-api/protocol-score"))
         .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
         .header(CONTENT_TYPE, APP_JSON)
         .build()

@@ -14,6 +14,7 @@ data class Quiz(
     var company: Long,
     val controlNumber: Long,
     val question: String,
+    val urlServer: String,
     val btnFooterText: String?,
 ) {
     constructor(quiz: Quiz, dbQuiz: Quiz): this(
@@ -21,6 +22,7 @@ data class Quiz(
         dbQuiz.company,
         dbQuiz.controlNumber,
         quiz.question,
+        quiz.urlServer,
         quiz.btnFooterText,
     )
 }
