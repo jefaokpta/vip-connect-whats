@@ -27,4 +27,10 @@ internal class SessionCentralKtTest{
         println(mapa)
         println(mapa2)
     }
+    //@Test
+    fun substringTeste(){
+//        val str = "whatsMedia/image-3EB078722DD2.jpeg"
+        val str = "image-3EB078722DD2.jpeg"
+        println(str.substringAfterLast("/"))
+    }
 }
