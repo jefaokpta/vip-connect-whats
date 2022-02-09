@@ -14,6 +14,7 @@ import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.time.LocalDateTime
 import java.util.*
 
@@ -42,8 +43,9 @@ class MessageService(
         }
     }
 
-    private fun categorizedContact(contact: Contact, whatsChat: WhatsChat) = contactRepository.save(contact)
+    private fun categorizedContact(contact: Contact, whatsChat: WhatsChat) = contactRepository.save(generateProtocol(contact))
         .flatMap { deliverMessageFlow(it, whatsChat) }
+        .doOnNext { queryOnlineAgents(it) }
 
     private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
         if (AnsweringUraCenter.contacts.containsKey(whatsChat.remoteJid)){
@@ -51,7 +53,6 @@ class MessageService(
             if (answer.isPresent){
                 AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
                 return genericMessage(ura.validOption, answer.get())
-                    .doOnNext { queryOnlineAgents(it) }
                     .flatMap { categorizedContact(it, whatsChat) }
             }
             return if(ura.invalidOption.isNullOrBlank()){
@@ -91,7 +92,7 @@ class MessageService(
             }
         }
         uraRepository.findByCompany(contact.company)
-            .map { genericMessage(it.agentEmpty, contact) }
+            .flatMap { genericMessage(it.agentEmpty, contact) }
             .subscribe()
     }
 
@@ -99,6 +100,7 @@ class MessageService(
         .map { contactOnAttendance(it, whatsChat) }
         .map { addContactCenter(contact.company, it) }
         .flatMap { updateContactLastMessage(it, whatsChat.datetime, whatsChat.messageId) }
+        .publishOn(Schedulers.boundedElastic())
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
 
@@ -136,10 +138,10 @@ class MessageService(
     private fun isAnswer(ura: Ura, whatsChat: WhatsChat, contact: Contact): Optional<Contact> {
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
-                return Optional.of(generateProtocol(contact.apply {
+                return Optional.of(contact.apply {
                     category = answer.departmentId
                     lastCategory = answer.departmentId
-                }))
+                })
             }
         }
         return Optional.empty()
