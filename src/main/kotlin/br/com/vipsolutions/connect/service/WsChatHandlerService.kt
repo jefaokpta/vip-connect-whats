@@ -27,14 +27,14 @@ class WsChatHandlerService(
     private val quizRepository: QuizRepository,
 ) {
 
-    fun sendQuizOrFinalizeMsg(contact: Contact) = quizRepository.existsByCompany(contact.company)
+    fun sendQuizOrFinalizeMsg(contact: Contact): Mono<Contact> = quizRepository.existsByCompany(contact.company)
         .flatMap { hasQuiz ->
             if (hasQuiz){
                 val contactCopy = contact.copy()
                 resetContact(contact)
                     .flatMap { quizRepository.findByCompany(it.company) }
                     .doOnNext { AnsweringQuizCenter.quizzes[contact.whatsapp] = ContactAndQuiz(contactCopy, it) }
-                    .map { sendQuizButtonsMessage(contact, it) }
+                    .map { sendQuizButtonsMessage(contact, it); contact }
             }else{
                 resetContact(contact)
                     .doFinally {finalizeAttendance(contact).subscribe()}
