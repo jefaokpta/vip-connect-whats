@@ -13,6 +13,7 @@ import org.springframework.web.reactive.socket.WebSocketMessage
 import org.springframework.web.reactive.socket.WebSocketSession
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.util.*
 
 @Service
@@ -86,9 +87,11 @@ class WsChatHandler(
                         agentActionWs.contact!!.isNewProtocol = false
                         return contactRepository.save(agentActionWs.contact!!)
                             .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
+                            .publishOn(Schedulers.boundedElastic())
                             .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
                     }
                     return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
+                        .publishOn(Schedulers.boundedElastic())
                         .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
                 }
                 agentActionWs.action = "ERROR"
@@ -108,7 +111,8 @@ class WsChatHandler(
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = missingContactErrorMessage })))
                 wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
-                    .doOnNext { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
+                    .publishOn(Schedulers.boundedElastic())
+                    .doFinally { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }
 
             "LIST_CONTACTS_LAST_CATEGORY" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
@@ -129,6 +133,7 @@ class WsChatHandler(
                 contactRepository.save(generateProtocol(contact))
                     .doOnNext { AnsweringUraCenter.contacts.remove(it.whatsapp) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
+                    .publishOn(Schedulers.boundedElastic())
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
                         lockContact(contact, agentActionWs.agent).subscribe()
@@ -141,6 +146,7 @@ class WsChatHandler(
                 contact.isNewProtocol = false
                 contactRepository.save(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
+                    .publishOn(Schedulers.boundedElastic())
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
                         alertNewMessageToAgents(contact).subscribe()
