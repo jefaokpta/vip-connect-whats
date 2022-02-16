@@ -44,7 +44,6 @@ class WsChatHandler(
                 .map (::contactsHaveNewMessages)
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
-//                .log()
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
