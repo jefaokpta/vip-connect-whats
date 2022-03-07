@@ -39,7 +39,7 @@ class MessageController(
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
         val fromMe = jsonObject.getAsJsonObject("key")["fromMe"].asBoolean
-        val timestamp = jsonObject.getAsJsonObject("messageTimestamp")["low"].asLong
+        val timestamp = jsonObject["messageTimestamp"].asLong
         val status = jsonObject["status"].asInt
         val company = jsonObject["company"].asLong
         val instanceId = jsonObject["instanceId"].asInt

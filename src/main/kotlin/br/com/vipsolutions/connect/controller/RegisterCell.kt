@@ -21,6 +21,7 @@ class RegisterCell(private val authWhatsappRepository: AuthWhatsappRepository) {
     @PostMapping
     fun receiveQrCode(@RequestBody qrCode: QrCode) = Mono.justOrEmpty(RegisterCompanyCenter.companies[qrCode.id])
         .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("QRCODE", 0, qrCode.id, qrCode, null))))) }
+        .doFirst { println("QRCODE RECEBIDO $qrCode") }
 
     @PostMapping("/auth")
     fun confirmedAuthWhats(@RequestBody authWhatsapp: AuthWhatsapp) = authWhatsappRepository.findByCompanyId(authWhatsapp.companyId)
