@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.*
 
 /**
@@ -39,12 +40,10 @@ class MessageController(
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
         val fromMe = jsonObject.getAsJsonObject("key")["fromMe"].asBoolean
-        val timestamp = jsonObject["messageTimestamp"].asLong
         val status = jsonObject["status"].asInt
         val company = jsonObject["company"].asLong
         val instanceId = jsonObject["instanceId"].asInt
-
-        val datetime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of("-03:00"))
+        val datetime = LocalDateTime.now()
 
         val whatsChat = WhatsChat(messageId, remoteJid, "", fromMe, status, company, datetime)
         if(jsonObject["mediaMessage"].asBoolean){
