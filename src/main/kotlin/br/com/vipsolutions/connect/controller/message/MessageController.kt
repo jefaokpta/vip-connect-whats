@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.controller.message
 
 import br.com.vipsolutions.connect.client.sendQuizAnswerToVip
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.MessageStatus
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.WhatsChatRepository
@@ -14,10 +15,7 @@ import com.google.gson.JsonObject
 import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.*
 
 /**
@@ -98,6 +96,11 @@ class MessageController(
 //                .log()
         }
     }
+
+    @PostMapping("/status/update")
+    fun updateOutgoingMessageStatus(@RequestBody messageStatus: MessageStatus) = whatsChatRepository.findById(messageStatus.id)
+        .flatMap { whatsChatRepository.save(it.apply { status = messageStatus.status; isPersistable = false }) }
+        .then()
 
     @PostMapping("/responses")
     fun buttonsResponse(@RequestBody payload: String): Mono<Void> {
