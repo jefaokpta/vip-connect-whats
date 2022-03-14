@@ -1,6 +1,5 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.model.AuthWhatsapp
 import br.com.vipsolutions.connect.model.ws.ActionWs
 import br.com.vipsolutions.connect.model.ws.QrCode
 import br.com.vipsolutions.connect.repository.AuthWhatsappRepository
@@ -23,24 +22,12 @@ class RegisterCell(private val authWhatsappRepository: AuthWhatsappRepository) {
         .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("QRCODE", 0, qrCode.id, qrCode, null))))) }
         .doFirst { println("QRCODE RECEBIDO $qrCode") }
 
-    @PostMapping("/auth")
-    fun confirmedAuthWhats(@RequestBody authWhatsapp: AuthWhatsapp) = authWhatsappRepository.findByCompanyId(authWhatsapp.companyId)
-        .flatMap { authWhatsappRepository.save(authWhatsapp.apply { id = it.id }) }
-        .switchIfEmpty(authWhatsappRepository.save(authWhatsapp))
-        .map { Optional.ofNullable(RegisterCompanyCenter.companies[it.companyId]) }
-        .flatMap { oWss ->
-            oWss.map { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, 0, null, null))))) }
-                .orElse(Mono.empty())
-        }
+    @PostMapping("/auth/{companyId}")
+    fun confirmedAuthWhats(@PathVariable companyId: Long) = Mono.justOrEmpty(Optional.ofNullable(RegisterCompanyCenter.companies[companyId]))
+        .map { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, 0, null, null))))) }
         .doFinally { println("CONFIRMADO NOVA AUTH WHATS") }
 
     @GetMapping("/auth/{companyId}")
     fun restoreAuthWhats(@PathVariable companyId: Long) = authWhatsappRepository.findByCompanyId(companyId)
-
-//    @GetMapping("/{id}")
-//    fun confirmedQrCode(@PathVariable id: Long) = Mono.justOrEmpty(RegisterCompanyCenter.companies[id])
-//        .flatMap { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, id, null, null))))) }
-//        .doFirst { println("CONFIRMADO ID $id") }
-
 
 }
