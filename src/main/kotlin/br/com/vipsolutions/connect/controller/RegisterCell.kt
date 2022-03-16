@@ -25,7 +25,7 @@ class RegisterCell(private val authWhatsappRepository: AuthWhatsappRepository) {
     @PostMapping("/auth/{companyId}")
     fun confirmedAuthWhats(@PathVariable companyId: Long) = Mono.justOrEmpty(Optional.ofNullable(RegisterCompanyCenter.companies[companyId]))
         .map { it.send(Mono.just(it.textMessage(objectToJson(ActionWs("REGISTERED", 0, 0, null, null))))) }
-        .doFinally { println("CONFIRMADO NOVA AUTH WHATS") }
+        .doFinally { println("CONFIRMADO CONEXAO WHATS $companyId") }
 
     @GetMapping("/auth/{companyId}")
     fun restoreAuthWhats(@PathVariable companyId: Long) = authWhatsappRepository.findByCompanyId(companyId)

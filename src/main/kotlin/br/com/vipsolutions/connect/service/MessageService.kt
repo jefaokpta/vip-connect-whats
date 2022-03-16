@@ -31,7 +31,7 @@ class MessageService(
 ) {
 
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
-        println("VERIFICANDO CATEGORIA")
+//        println("VERIFICANDO CATEGORIA")
         return if (Optional.ofNullable(contact.category).isEmpty){
             uraRepository.findByCompany(contact.company)
                 .flatMap { uraOptionService.fillOptions(it) }
