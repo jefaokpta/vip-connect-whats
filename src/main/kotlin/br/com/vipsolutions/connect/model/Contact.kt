@@ -33,6 +33,21 @@ data class Contact(
     @Transient
     var newMessageQtde = 0
 
+    constructor(contactDAO: ContactDAO) : this(
+        id = 0,
+        name = contactDAO.name,
+        whatsapp = contactDAO.whatsapp,
+        company = contactDAO.controlNumber,
+        instanceId = contactDAO.instanceId,
+        lastCategory = 0,
+        imgUrl = null,
+        lastMessageId = null,
+        lastMessageTime = null,
+        category = null,
+        protocol = null,
+        fromAgent = false,
+        isNewProtocol = false
+    )
     constructor(contact: Contact): this(
         contact.id,
         contact.name,
