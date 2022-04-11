@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.service
 
+import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.ContactDAO
 import br.com.vipsolutions.connect.repository.CompanyRepository
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -27,5 +29,18 @@ class ContactService(
                 instanceId = company.instance
             }))
         }
+        .doOnNext {contact ->
+            Mono.just("CRIANDO EXECUCAO TARDIA")
+                .flatMap { addProfilePicture(contact) }
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe()
+            println("Contact ${contact.name} created")
+        }
+        .log()
+
         .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
+
+    private fun addProfilePicture(contact: Contact) = Mono.justOrEmpty(getProfilePicture(contact.instanceId, contact.whatsapp).picture)
+        .flatMap { contactRepository.save(contact.apply { imgUrl = it }) }
+
 }

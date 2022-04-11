@@ -21,7 +21,7 @@ class ContactController(private val contactService: ContactService) {
         .map { it.values.toList() }
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "lista não encontrado.")))
 
-    @PostMapping
+    @PostMapping @CrossOrigin
     @ResponseStatus(HttpStatus.CREATED)
     fun save(@RequestBody contactDAO: ContactDAO) = contactService.createContact(contactDAO)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "EMPRESA NÃO ENCONTRADA.")))
