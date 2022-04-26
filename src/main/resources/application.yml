@@ -2,12 +2,12 @@
 server:
   error:
     include-stacktrace: on_param
-  port: 9090
+#  port: 9090
 spring:
   r2dbc:
-    url: r2dbc:mariadb://localhost:3307/vip
-    username: jefao
-    password: jefao
+    url: r2dbc:mariadb://localhost:3306/vip
+    username: ${DB_USER:jefao}
+    password: ${DB_PASS:jefao}
 
 
 

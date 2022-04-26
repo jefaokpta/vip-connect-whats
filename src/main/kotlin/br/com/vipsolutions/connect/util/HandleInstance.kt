@@ -2,7 +2,6 @@ package br.com.vipsolutions.connect.util
 
 import br.com.vipsolutions.connect.model.Company
 import br.com.vipsolutions.connect.model.CompanyInfo
-import java.util.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -35,4 +34,9 @@ fun destroyInstance(company: Company): CompanyInfo {
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
         .orElse(CompanyInfo(company, "Container Inexistente"))
+}
+
+fun removeAuthFile(companyId: Long) {
+    val command = "rm -f /opt/whatsMediaHost/auths/auth_info_multi-${companyId}"
+    Runtime.getRuntime().exec(command)
 }

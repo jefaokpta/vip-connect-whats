@@ -36,7 +36,6 @@ class ContactService(
                 .subscribe()
             println("Contact ${contact.name} created")
         }
-        .log()
 
         .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
 

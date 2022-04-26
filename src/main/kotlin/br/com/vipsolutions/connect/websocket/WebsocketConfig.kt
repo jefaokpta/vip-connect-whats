@@ -20,7 +20,6 @@ class WebsocketConfig(
     private val companyRepository: CompanyRepository,
     private val contactRepository: ContactRepository,
     private val whatsChatRepository: WhatsChatRepository,
-    private val authWhatsappRepository: AuthWhatsappRepository,
     private val wsChatHandlerService: WsChatHandlerService,
 ) {
 
@@ -28,7 +27,7 @@ class WebsocketConfig(
     fun handlerMapping(): HandlerMapping? {
         val map: MutableMap<String, WebSocketHandler?> = HashMap()
         map["/ws/chats"] = WsChatHandler(contactRepository, companyRepository, whatsChatRepository, wsChatHandlerService)
-        map["/ws/register"] = WsRegisterHandler(companyService, authWhatsappRepository)
+        map["/ws/register"] = WsRegisterHandler(companyService)
         val mapping = SimpleUrlHandlerMapping()
         mapping.urlMap = map
         mapping.order = Ordered.HIGHEST_PRECEDENCE
