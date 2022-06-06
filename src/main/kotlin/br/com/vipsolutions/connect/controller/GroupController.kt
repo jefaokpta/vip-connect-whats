@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.Group
 import br.com.vipsolutions.connect.repository.GroupRepository
+import br.com.vipsolutions.connect.service.GroupService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -14,12 +15,15 @@ import reactor.kotlin.core.publisher.switchIfEmpty
  */
 @RestController
 @RequestMapping("/api/groups")
-class GroupController(private val groupRepository: GroupRepository) {
+class GroupController(private val groupRepository: GroupRepository, private val groupService: GroupService) {
 
     private val NOT_FOUND_MESSAGE = "Grupo não encontrado."
 
     @GetMapping
-    fun getAll() = groupRepository.findAll()
+    fun getAllOnlyGroups() = groupRepository.findAll()
+
+    @GetMapping("/{id}")
+    fun getGroupWithContactList(@PathVariable id: Long) = groupService.getGroupWithContactList(id)
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     fun new(@RequestBody group: Group) = groupRepository.save(group)

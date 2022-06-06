@@ -17,5 +17,5 @@ data class Group(
     val controlNumber: Long
 ) {
     @Transient
-    val contacts: List<Contact> = listOf()
+    var contacts: List<Contact> = listOf()
 }
