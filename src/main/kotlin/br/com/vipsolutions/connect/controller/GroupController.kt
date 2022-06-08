@@ -24,9 +24,10 @@ class GroupController(private val groupRepository: GroupRepository, private val 
 
     @GetMapping("/{id}")
     fun getGroupWithContactList(@PathVariable id: Long) = groupService.getGroupWithContactList(id)
+        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)))
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
-    fun new(@RequestBody group: Group) = groupRepository.save(group)
+    fun new(@RequestBody group: Group) = groupService.newGroup(group)
         .onErrorResume { Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, handleMessageError(it.localizedMessage))) }
 
     @PutMapping

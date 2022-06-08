@@ -14,4 +14,9 @@ data class GroupContactRelation(
     val groupId: Long,
     val contactId: Long,
 ) {
+    constructor(groupId: Long, contactId: Long) : this(
+        0,
+        groupId,
+        contactId
+    )
 }

@@ -18,4 +18,6 @@ data class Group(
 ) {
     @Transient
     var contacts: List<Contact> = listOf()
+    @Transient
+    var contactsId: List<Long> = listOf()
 }
