@@ -8,6 +8,7 @@ import br.com.vipsolutions.connect.repository.GroupContactRelationRepository
 import br.com.vipsolutions.connect.repository.GroupRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import reactor.core.scheduler.Schedulers
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -31,10 +32,25 @@ class GroupService(
     fun newGroup(group: Group) = groupRepository.save(group)
         .flatMap { insertGroupContactRelation(it, group.contactsId) }
 
-    private fun insertGroupContactRelation(group: Group, contactsIdReceived: List<Long>) = groupContactRelationRepository.saveAll(
-        contactsIdReceived.map { GroupContactRelation(group.id, it) })
-        .collectList()
+    @Transactional
+    fun updateGroup(group: Group) = groupRepository.findById(group.id)
+        .flatMap{groupRepository.save(group)}
+        .publishOn(Schedulers.boundedElastic())
+        .doOnNext { groupContactRelationRepository.deleteAllByGroupId(group.id).subscribe() }
+        .flatMap { saveGroupContactRelation(it, group.contactsId) }
+
+    @Transactional
+    fun deleteGroup(id: Long) = groupRepository.findById(id)
+        .publishOn(Schedulers.boundedElastic())
+        .doOnNext { groupContactRelationRepository.deleteAllByGroupId(it.id).subscribe() }
+        .flatMap (groupRepository::delete)
+
+    private fun insertGroupContactRelation(group: Group, contactsIdReceived: List<Long>) = saveGroupContactRelation(group, contactsIdReceived)
         .map { group.apply { contactsId = it.map { it.contactId } } }
+
+    private fun saveGroupContactRelation(group: Group, contactsIdReceived: List<Long> ) = groupContactRelationRepository.saveAll(
+            contactsIdReceived.map { GroupContactRelation(group.id, it) })
+            .collectList()
 
     private fun putContactListOnGroup(id: Long, contactList: List<Contact>) = groupRepository.findById(id)
         .map { it.apply { contacts = contactList } }
