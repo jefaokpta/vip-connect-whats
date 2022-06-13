@@ -33,7 +33,7 @@ class MessageController(
 
     @PostMapping
     fun received(@RequestBody payload: String): Mono<WhatsChat> {
-        println(payload)
+        println("RECEBIDO: $payload")
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
         val remoteJid = jsonObject.getAsJsonObject("key")["remoteJid"].asString
         val messageId = jsonObject.getAsJsonObject("key")["id"].asString
@@ -87,7 +87,7 @@ class MessageController(
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
         }
-        else {
+        else { //todo: cancelar bot ao receber 10 respostas invalidas
             contactRepository.findByWhatsappAndCompany(remoteJid, company)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat.apply { protocol = it.protocol }) }

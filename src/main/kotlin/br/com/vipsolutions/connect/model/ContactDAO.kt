@@ -11,3 +11,4 @@ class ContactDAO(
 ) {
     var instanceId: Int = 0
 }
+// todo: nome whtaspapp,id, foto

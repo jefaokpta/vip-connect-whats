@@ -14,7 +14,7 @@ import reactor.core.scheduler.Schedulers
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 06/06/22
  */
-
+// todo: usar este servico no ws
 @Service
 class GroupService(
     private val groupRepository: GroupRepository,

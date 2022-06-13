@@ -152,7 +152,7 @@ class WsChatHandler(
                         wsChatHandlerService.sendTransferMessage(contact).subscribe()
                     }
             }
-
+    // todo: criar acoes do CRUD de Grupos
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }
     }
