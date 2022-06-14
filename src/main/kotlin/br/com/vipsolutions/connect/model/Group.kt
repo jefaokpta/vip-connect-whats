@@ -17,7 +17,7 @@ data class Group(
     val controlNumber: Long
 ) {
     @Transient
-    var contacts: List<Contact> = listOf() // todo: implementar ContactGroup ou ContactDAO na lista
+    var contacts: List<Contact> = listOf()
     @Transient
     var contactsId: List<Long> = listOf()
 }

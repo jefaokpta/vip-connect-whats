@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.model.Group
+import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.repository.GroupRepository
 import br.com.vipsolutions.connect.service.GroupService
 import org.springframework.http.HttpStatus
@@ -24,6 +25,7 @@ class GroupController(private val groupRepository: GroupRepository, private val 
 
     @GetMapping("/{id}")
     fun getGroupWithContactList(@PathVariable id: Long) = groupService.getGroupWithContactList(id)
+        .map(::GroupDAO)
         .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE)))
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
