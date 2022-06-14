@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.GroupMessage
 import br.com.vipsolutions.connect.repository.GroupRepository
@@ -34,13 +35,14 @@ class GroupMessageController(
     private fun runItAfter(groupMessage: GroupMessage){
         println("Enviando mensagem para o grupo ${groupMessage.groupId}")
         groupService.getGroupWithContactList(groupMessage.groupId)
-            .doOnNext { sendIndividualMessage(it.contacts) }
+            .doOnNext { sendIndividualMessage(it.contacts, groupMessage) }
             .subscribe()
     }
 
-    private fun sendIndividualMessage(contacts: List<Contact>) {
+    private fun sendIndividualMessage(contacts: List<Contact>, groupMessage: GroupMessage) {
         contacts.forEach { contact ->
-            println("Mandando mensagem para ${contact.name} - ${contact.whatsapp}")
+            println("Mandando Mensagem de Grupo ${groupMessage.groupId} para ${contact.name} - ${contact.whatsapp}")
+            sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
             TimeUnit.SECONDS.sleep(2)
         }
     }

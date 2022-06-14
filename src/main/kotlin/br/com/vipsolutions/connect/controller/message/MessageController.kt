@@ -104,7 +104,7 @@ class MessageController(
 
     @PostMapping("/responses")
     fun buttonsResponse(@RequestBody payload: String): Mono<Void> {
-        println(payload)
+        println("RESPOSTA: $payload")
         val jsonObject = Gson().fromJson(payload, JsonObject::class.java)
         val selectedBtn = jsonObject.getAsJsonObject("message")
             .getAsJsonObject("buttonsResponseMessage")["selectedButtonId"].asInt

@@ -5,10 +5,11 @@ package br.com.vipsolutions.connect.model
  * Date: 04/04/22
  */
 class ContactDAO(
+    val id: Long,
     val name: String,
     var whatsapp: String,
     var controlNumber: Long,
 ) {
+    val imgUrl: String = ""
     var instanceId: Int = 0
 }
-// todo: nome whtaspapp,id, foto
