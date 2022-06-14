@@ -15,6 +15,7 @@ import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
@@ -65,6 +66,7 @@ class MessageService(
             return if(ura.invalidOption.isNullOrBlank()){
                 buildUraMessageNoInitialMessage(ura, contact)
             }else Mono.just(sendTextMessage(contact.whatsapp, ura.invalidOption, contact.instanceId))
+                .delayElement(Duration.ofSeconds(2))
                 .flatMap { buildUraMessageNoInitialMessage(ura, contact) }
         }
         AnsweringUraCenter.contacts[whatsChat.remoteJid] = 0
