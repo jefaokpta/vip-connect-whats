@@ -55,12 +55,19 @@ class MessageService(
                 return genericMessage(ura.validOption, answer.get())
                     .flatMap { categorizedContact(it, whatsChat) }
             }
+            AnsweringUraCenter.contacts[whatsChat.remoteJid] = AnsweringUraCenter.contacts[whatsChat.remoteJid]!! +1
+            println("URA OPCAO INVALIDA NUMERO: ${AnsweringUraCenter.contacts[whatsChat.remoteJid]}")
+            if (AnsweringUraCenter.contacts[whatsChat.remoteJid]!! > 5){
+                println("URA OPCAO INVALIDAS DEMAIS CANCELANDO BOT")
+                AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
+                return Mono.just(contact)
+            }
             return if(ura.invalidOption.isNullOrBlank()){
                 buildUraMessageNoInitialMessage(ura, contact)
             }else Mono.just(sendTextMessage(contact.whatsapp, ura.invalidOption, contact.instanceId))
                 .flatMap { buildUraMessageNoInitialMessage(ura, contact) }
         }
-        AnsweringUraCenter.contacts[whatsChat.remoteJid] = ""
+        AnsweringUraCenter.contacts[whatsChat.remoteJid] = 0
         Optional.ofNullable(AnsweringQuizCenter.quizzes.remove(contact.whatsapp))
             .map { sendQuizAnswerToVip(it, 0) }
         return buildUraMessage(ura, contact)

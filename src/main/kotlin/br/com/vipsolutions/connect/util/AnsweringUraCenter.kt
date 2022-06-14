@@ -6,6 +6,6 @@ package br.com.vipsolutions.connect.util
  */
 class AnsweringUraCenter {
     companion object{
-        val contacts = mutableMapOf<String, String>()
+        val contacts = mutableMapOf<String, Int>()
     }
 }
