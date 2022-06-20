@@ -17,7 +17,7 @@ import reactor.kotlin.core.publisher.switchIfEmpty
 @RestController
 @RequestMapping("/api/groups")
 class GroupController(private val groupRepository: GroupRepository, private val groupService: GroupService) {
-
+/*
     private val NOT_FOUND_MESSAGE = "Grupo não encontrado."
 
     @GetMapping
@@ -49,4 +49,5 @@ class GroupController(private val groupRepository: GroupRepository, private val 
         }
         return errorMessage
     }
+    */
 }

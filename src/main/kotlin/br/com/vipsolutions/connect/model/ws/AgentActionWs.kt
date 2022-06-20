@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.model.ws
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.model.WhatsChat
 
 /**
@@ -16,6 +17,8 @@ class AgentActionWs(
     var messages: List<WhatsChat>?,
     var message: WhatsChat?,
     var errorMessage: String?,
+    var group: GroupDAO?,
+    var groups: List<GroupDAO>?,
     val categories: MutableList<Long> = mutableListOf()
 ) {
 }

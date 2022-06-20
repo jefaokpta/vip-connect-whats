@@ -87,7 +87,7 @@ class MessageController(
                 }
                 .switchIfEmpty(whatsChatRepository.save(whatsChat))
         }
-        else { //todo: cancelar bot ao receber 10 respostas invalidas
+        else {
             contactRepository.findByWhatsappAndCompany(remoteJid, company)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat.apply { protocol = it.protocol }) }

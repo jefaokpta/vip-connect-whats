@@ -20,4 +20,12 @@ data class Group(
     var contacts: List<Contact> = listOf()
     @Transient
     var contactsId: List<Long> = listOf()
+
+    constructor(groupDAO: GroupDAO) : this(
+        id = groupDAO.id,
+        name = groupDAO.name,
+        controlNumber = groupDAO.controlNumber,
+    ){
+        contactsId = groupDAO.contactsId
+    }
 }

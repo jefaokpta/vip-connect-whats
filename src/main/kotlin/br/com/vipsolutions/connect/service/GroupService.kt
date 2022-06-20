@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.service
 
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.Group
+import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.model.relation.GroupContactRelation
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupContactRelationRepository
@@ -29,15 +30,15 @@ class GroupService(
         .flatMap { putContactListOnGroup(id, it) }
 
     @Transactional
-    fun newGroup(group: Group) = groupRepository.save(group)
-        .flatMap { insertGroupContactRelation(it, group.contactsId) }
+    fun newGroup(groupDAO: GroupDAO) = groupRepository.save(Group(groupDAO))
+        .flatMap { insertGroupContactRelation(it, groupDAO.contactsId) }
 
     @Transactional
-    fun updateGroup(group: Group) = groupRepository.findById(group.id)
-        .flatMap{groupRepository.save(group)}
+    fun updateGroup(groupDAO: GroupDAO) = groupRepository.findById(groupDAO.id)
+        .flatMap{groupRepository.save(Group(groupDAO))}
         .publishOn(Schedulers.boundedElastic())
-        .doOnNext { groupContactRelationRepository.deleteAllByGroupId(group.id).subscribe() }
-        .flatMap { saveGroupContactRelation(it, group.contactsId) }
+        .doOnNext { groupContactRelationRepository.deleteAllByGroupId(groupDAO.id).subscribe() }
+        .flatMap { saveGroupContactRelation(it, groupDAO.contactsId) }
 
     @Transactional
     fun deleteGroup(id: Long) = groupRepository.findById(id)
@@ -54,4 +55,7 @@ class GroupService(
 
     private fun putContactListOnGroup(id: Long, contactList: List<Contact>) = groupRepository.findById(id)
         .map { it.apply { contacts = contactList } }
+
+    fun getAllGroupsByControlNumber(controlNumber: Long) = groupRepository.findAllByControlNumber(controlNumber)
+        .collectList()
 }

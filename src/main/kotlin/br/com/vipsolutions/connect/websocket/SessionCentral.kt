@@ -70,7 +70,9 @@ fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNullable(Se
         contact,
         null,
         null,
-        null
+        null,
+        null,
+        null,
     ))))) }
 
 fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
@@ -103,7 +105,7 @@ fun contactOnAttendance(contact: Contact, whatsChat: WhatsChat): Contact {
         if (agent.value.contact !== null){
             if (agent.value.contact!!.id == contact.id){
                 contact.busy = true
-                agent.value.session.send(Mono.just(agent.value.session.textMessage(objectToJson(AgentActionWs("MESSAGE_IN_ATTENDANCE", 0, 0, null, contact, null, whatsChat, null)))))
+                agent.value.session.send(Mono.just(agent.value.session.textMessage(objectToJson(AgentActionWs("MESSAGE_IN_ATTENDANCE", 0, 0, null, contact, null, whatsChat, null, null, null)))))
                     .subscribe()
             }
         }
@@ -118,7 +120,7 @@ fun alertNewMessageToAgents(contact: Contact): Flux<Void> {
                 Flux.fromIterable(agentSession.values).filter { it.categories.contains(contact.category) }
             }
             .orElse(Flux.empty())
-            .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null, null))))) }
+            .flatMap {it.session.send(Mono.just(it.session.textMessage(objectToJson(AgentActionWs("NEW_MESSAGE", 0, 0, null, contact, null, null, null, null, null))))) }
 
     }
     return Flux.empty()

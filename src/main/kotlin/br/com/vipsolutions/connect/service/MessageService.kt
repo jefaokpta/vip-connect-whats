@@ -38,7 +38,6 @@ class MessageService(
                 .flatMap { uraOptionService.fillOptions(it) }
                 .flatMap{handleRobotMessage(it, whatsChat, contact)}
                 .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
-//                .log()
         } else{
             deliverMessageFlow(contact, whatsChat)
         }
