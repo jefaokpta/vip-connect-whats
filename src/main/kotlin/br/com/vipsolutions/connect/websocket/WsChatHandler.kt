@@ -2,9 +2,13 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.client.sendTextMessage
+import br.com.vipsolutions.connect.model.ContactLite
+import br.com.vipsolutions.connect.model.Group
 import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
-import br.com.vipsolutions.connect.repository.*
+import br.com.vipsolutions.connect.repository.CompanyRepository
+import br.com.vipsolutions.connect.repository.ContactRepository
+import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.GroupService
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.*
@@ -53,8 +57,19 @@ class WsChatHandler(
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
                 .flatMap { contactRepository.save(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
-                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(agentActionWs.action,
-                    agentActionWs.agent, agentActionWs.controlNumber, null, null, null, null, null, null, null)))))
+                .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(AgentActionWs(
+                    agentActionWs.action,
+                    agentActionWs.agent,
+                    agentActionWs.controlNumber,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                )))))
 
             "CONTACT_ANSWERED" -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                 .doFinally {
@@ -130,6 +145,12 @@ class WsChatHandler(
                 .map { verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
+            "LIST_ALL_CONTACTS_LITE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
+                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
+                .flatMap { it.collectList() }
+                .map { it.map(::ContactLite) }
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contactsLite = it })) }
+
             "ACTIVE_CHAT" -> {
                 var contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_CONTACT_ERROR_MESSAGE })))
                 contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
@@ -166,8 +187,8 @@ class WsChatHandler(
             "UPDATE_GROUP" -> {
                 val updateGroup = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.updateGroup(updateGroup)
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
-                    .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = GROUP_NOT_FOUND }))))
+                    .switchIfEmpty (Mono.just(mutableListOf()))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { if(it.isEmpty()) errorMessage = "ERRO NO UPDATE DO GROUP - ELE EXISTE?" })) }
             }
             "DELETE_GROUP" -> {
                 val deleteGroup = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
@@ -178,8 +199,11 @@ class WsChatHandler(
             "GROUP_WITH_CONTACT_LIST" -> {
                 val groupReceived = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.getGroupWithContactList(groupReceived.id)
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { group = GroupDAO(it) })) }
-//                    .switchIfEmpty(Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = GROUP_NOT_FOUND }))))
+                    .switchIfEmpty(Mono.just(Group(0, "", 0)))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply {
+                        if(it.id == 0L) errorMessage = GROUP_NOT_FOUND
+                        else group = GroupDAO(it)
+                    })) }
             }
             "LIST_ALL_GROUPS" -> {
                 groupService.getAllGroupsByControlNumber(agentActionWs.controlNumber)

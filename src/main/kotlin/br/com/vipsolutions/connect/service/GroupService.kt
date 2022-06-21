@@ -54,7 +54,7 @@ class GroupService(
             .collectList()
 
     private fun putContactListOnGroup(id: Long, contactList: List<Contact>) = groupRepository.findById(id)
-        .map { it.apply { contacts = contactList } }
+        .map { group -> group.apply { contacts = contactList; contactsId = contactList.map { it.id } } }
 
     fun getAllGroupsByControlNumber(controlNumber: Long) = groupRepository.findAllByControlNumber(controlNumber)
         .collectList()

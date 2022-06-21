@@ -1,17 +1,17 @@
-## ATENCAO PRO AMBIENTE HOMOLOG: PORTA BANCO 3307 E PORTA WEB 9090!
+## ATENCAO PRO AMBIENTE HOMOLOG: PORTA BANCO 3307 E PORTA WEB 9090! E DESATIVA LOGGING DE SQL
 server:
   error:
     include-stacktrace: on_param
-#  port: 9090
+  port: 9090 #HOMOLOG
 spring:
   r2dbc:
-    url: r2dbc:mariadb://localhost:3306/vip
+    url: r2dbc:mariadb://localhost:3307/vip #HOMOLOG
+#    url: r2dbc:mariadb://localhost:3306/vip
     username: ${DB_USER:jefao}
     password: ${DB_PASS:jefao}
 
 
-
-logging:
+logging: #HOMOLOG
   level:
     org:
       springframework:

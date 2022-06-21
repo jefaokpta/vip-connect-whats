@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.model.ws
 
 import br.com.vipsolutions.connect.model.Contact
+import br.com.vipsolutions.connect.model.ContactLite
 import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.model.WhatsChat
 
@@ -13,6 +14,7 @@ class AgentActionWs(
     val agent: Int,
     val controlNumber: Long,
     var contacts: List<Contact>?,
+    var contactsLite: List<ContactLite>?,
     var contact: Contact?,
     var messages: List<WhatsChat>?,
     var message: WhatsChat?,
