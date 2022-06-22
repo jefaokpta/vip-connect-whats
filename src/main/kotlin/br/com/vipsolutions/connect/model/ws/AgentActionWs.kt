@@ -1,9 +1,6 @@
 package br.com.vipsolutions.connect.model.ws
 
-import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.ContactLite
-import br.com.vipsolutions.connect.model.GroupDAO
-import br.com.vipsolutions.connect.model.WhatsChat
+import br.com.vipsolutions.connect.model.*
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -21,6 +18,7 @@ class AgentActionWs(
     var errorMessage: String?,
     var group: GroupDAO?,
     var groups: List<GroupDAO>?,
+    val groupMessage: GroupMessage?,
     val categories: MutableList<Long> = mutableListOf()
 ) {
 }

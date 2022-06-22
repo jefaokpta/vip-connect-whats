@@ -74,6 +74,7 @@ fun broadcastToAgents(contact: Contact, action: String) = Optional.ofNullable(Se
         null,
         null,
         null,
+        null,
     ))))) }
 
 fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
@@ -117,6 +118,7 @@ fun contactOnAttendance(contact: Contact, whatsChat: WhatsChat): Contact {
                     whatsChat,
                     null,
                     null,
+                    null,
                     null
                 )))))
                     .subscribe()
@@ -140,6 +142,7 @@ fun alertNewMessageToAgents(contact: Contact): Flux<Void> {
                 null,
                 null,
                 contact,
+                null,
                 null,
                 null,
                 null,

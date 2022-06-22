@@ -68,6 +68,7 @@ class WsChatHandler(
                     null,
                     null,
                     null,
+                    null,
                     null
                 )))))
 
@@ -208,6 +209,12 @@ class WsChatHandler(
             "LIST_ALL_GROUPS" -> {
                 groupService.getAllGroupsByControlNumber(agentActionWs.controlNumber)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { groups = it.map(::GroupDAO) })) }
+            }
+            "SEND_GROUP_MESSAGE" -> {
+                val groupMessage = agentActionWs.groupMessage?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO GROUP MESSAGE" })))
+                groupService.sendGroupMessage(groupMessage)
+                    .switchIfEmpty(Mono.just(Group(0, "", 0)))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { if(it.id == 0L) errorMessage = GROUP_NOT_FOUND })) }
             }
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }

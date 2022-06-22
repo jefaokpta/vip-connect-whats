@@ -25,7 +25,7 @@ class GroupMessageController(
     private val groupService: GroupService,
     private val groupRepository: GroupRepository
 ) {
-
+/*
     @PostMapping
     fun sendGroupMessage(@RequestBody groupMessage: GroupMessage) = groupRepository.findById(groupMessage.groupId)
         .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Grupo não encontrado")))
@@ -46,4 +46,5 @@ class GroupMessageController(
             TimeUnit.SECONDS.sleep(2)
         }
     }
+    */
 }

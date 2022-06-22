@@ -1,8 +1,10 @@
 package br.com.vipsolutions.connect.service
 
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.Group
 import br.com.vipsolutions.connect.model.GroupDAO
+import br.com.vipsolutions.connect.model.GroupMessage
 import br.com.vipsolutions.connect.model.relation.GroupContactRelation
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupContactRelationRepository
@@ -10,6 +12,7 @@ import br.com.vipsolutions.connect.repository.GroupRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.scheduler.Schedulers
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -45,6 +48,24 @@ class GroupService(
         .publishOn(Schedulers.boundedElastic())
         .doOnNext { groupContactRelationRepository.deleteAllByGroupId(it.id).subscribe() }
         .flatMap (groupRepository::delete)
+
+    fun sendGroupMessage(groupMessage: GroupMessage) = groupRepository.findById(groupMessage.groupId)
+        .doOnNext { runItAfter(groupMessage) }
+
+    private fun runItAfter(groupMessage: GroupMessage){
+        println("Enviando mensagem para o grupo ${groupMessage.groupId}")
+        getGroupWithContactList(groupMessage.groupId)
+            .doOnNext { sendIndividualMessage(it.contacts, groupMessage) }
+            .subscribe()
+    }
+
+    private fun sendIndividualMessage(contacts: List<Contact>, groupMessage: GroupMessage) {
+        contacts.forEach { contact ->
+            println("Mandando Mensagem de Grupo '${groupMessage.message}' ${groupMessage.groupId} para ${contact.name} - ${contact.whatsapp}")
+            sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
+            TimeUnit.SECONDS.sleep(2)
+        }
+    }
 
     private fun insertGroupContactRelation(group: Group, contactsIdReceived: List<Long>) = saveGroupContactRelation(group, contactsIdReceived)
         .map { group.apply { contactsId = it.map { it.contactId } } }
