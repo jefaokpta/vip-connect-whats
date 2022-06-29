@@ -58,8 +58,12 @@ class MessageService(
             AnsweringUraCenter.contacts[whatsChat.remoteJid] = AnsweringUraCenter.contacts[whatsChat.remoteJid]!! +1
             println("URA OPCAO INVALIDA NUMERO: ${AnsweringUraCenter.contacts[whatsChat.remoteJid]}")
             if (AnsweringUraCenter.contacts[whatsChat.remoteJid]!! > 5){
-                println("URA OPCAO INVALIDAS DEMAIS CANCELANDO BOT")
-                AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
+                if (AnsweringUraCenter.contacts[whatsChat.remoteJid]!! > 10){
+                    println("URA OPCAO INVALIDAS - ZERANDO TENTATIVAS")
+                    AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
+                    return Mono.just(contact)
+                }
+                println("URA OPCAO INVALIDAS - BOT IGNORANDO")
                 return Mono.just(contact)
             }
             return if(ura.invalidOption.isNullOrBlank()){

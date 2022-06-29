@@ -147,7 +147,7 @@ class WsChatHandler(
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "LIST_ALL_CONTACTS_LITE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
-                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
+                .map { contactRepository.findAllByCompanyOrderByNameAsc(it.id) }
                 .flatMap { it.collectList() }
                 .map { it.map(::ContactLite) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contactsLite = it })) }
