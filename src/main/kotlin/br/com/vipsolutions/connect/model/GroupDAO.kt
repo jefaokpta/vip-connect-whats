@@ -9,12 +9,21 @@ class GroupDAO(
     val id: Long,
     val name: String,
     val controlNumber: Long,
-    val contactsId: List<Long> = listOf()
+    var contactsId: List<Long> = listOf()
 ) {
     constructor(group: Group) : this(
         group.id,
         group.name,
         group.controlNumber,
-        group.contactsId
-    )
+    ){
+        this.contactsId = handleContactsIdBlank(group.contactsId)
+    }
+
+    private fun handleContactsIdBlank(contactsId: String): List<Long> {
+        return if (contactsId.isBlank()) {
+            listOf()
+        } else {
+            contactsId.split(",").map(String::toLong)
+        }
+    }
 }

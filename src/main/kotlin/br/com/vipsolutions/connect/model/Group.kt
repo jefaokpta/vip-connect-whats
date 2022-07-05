@@ -14,18 +14,17 @@ data class Group(
     @Id
     val id: Long,
     val name: String,
-    val controlNumber: Long
+    val controlNumber: Long,
+    val contactsId: String = "",
 ) {
     @Transient
     var contacts: List<Contact> = listOf()
-    @Transient
-    var contactsId: List<Long> = listOf()
 
     constructor(groupDAO: GroupDAO) : this(
-        id = groupDAO.id,
-        name = groupDAO.name,
-        controlNumber = groupDAO.controlNumber,
+        groupDAO.id,
+        groupDAO.name,
+        groupDAO.controlNumber,
+        groupDAO.contactsId.joinToString(",")
     ){
-        contactsId = groupDAO.contactsId
     }
 }

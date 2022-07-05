@@ -182,14 +182,15 @@ class WsChatHandler(
             "CREATE_GROUP" -> {
                 val newGroup = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.newGroup(newGroup)
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { group = GroupDAO(it) })) }
-                    .onErrorResume{Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "NÃO FOI POSSIVEL CRIAR O GRUPO: ${it.localizedMessage}" })))}
+//                    .switchIfEmpty(Mono.just(GroupDAO(0L, "", 0)))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { group = it })) }
+                    .onErrorResume { Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "NÃO FOI POSSIVEL CRIAR O GRUPO (ERROR)" }))) }
             }
             "UPDATE_GROUP" -> {
                 val updateGroup = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.updateGroup(updateGroup)
-                    .switchIfEmpty (Mono.just(mutableListOf()))
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { if(it.isEmpty()) errorMessage = "ERRO NO UPDATE DO GROUP - ELE EXISTE?" })) }
+                    .switchIfEmpty (Mono.just(Group(0L, "", 0)))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { if(it.id == 0L) errorMessage = "ERRO NO UPDATE DO GROUP - ELE EXISTE?" })) }
             }
             "DELETE_GROUP" -> {
                 val deleteGroup = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
@@ -200,11 +201,8 @@ class WsChatHandler(
             "GROUP_WITH_CONTACT_LIST" -> {
                 val groupReceived = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.getGroupWithContactList(groupReceived.id)
-                    .switchIfEmpty(Mono.just(Group(0, "", 0)))
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply {
-                        if(it.id == 0L) errorMessage = GROUP_NOT_FOUND
-                        else group = GroupDAO(it)
-                    })) }
+                    .switchIfEmpty(Mono.just(GroupDAO(0L, "", 0)))
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply {if(it.id == 0L) errorMessage = GROUP_NOT_FOUND else group = it})) }
             }
             "LIST_ALL_GROUPS" -> {
                 groupService.getAllGroupsByControlNumber(agentActionWs.controlNumber)
