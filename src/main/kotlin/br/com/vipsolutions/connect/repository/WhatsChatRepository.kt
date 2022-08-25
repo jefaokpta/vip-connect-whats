@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux
  */
 interface WhatsChatRepository: ReactiveCrudRepository<WhatsChat, String> {
 
-    fun findTop50ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid: String, company: Long): Flux<WhatsChat>
+    fun findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid: String, company: Long): Flux<WhatsChat>
 
     fun findAllByProtocolOrderByDatetimeDesc(protocol: Long): Flux<WhatsChat>
 }

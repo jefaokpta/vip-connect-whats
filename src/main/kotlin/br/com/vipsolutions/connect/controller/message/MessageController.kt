@@ -126,6 +126,6 @@ class MessageController(
 
     @GetMapping("/{company}/{remoteJid}")
     fun chats(@PathVariable remoteJid: String, @PathVariable company: Long): Flux<WhatsChat> {
-        return whatsChatRepository.findTop50ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid, company)
+        return whatsChatRepository.findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid, company)
     }
 }

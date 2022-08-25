@@ -2,18 +2,18 @@
 server:
   error:
     include-stacktrace: on_param
-  port: 9090 #HOMOLOG
+#  port: 9090 #HOMOLOG
 
 spring:
   r2dbc:
-    url: r2dbc:mariadb://localhost:3307/vip #HOMOLOG
-#    url: r2dbc:mariadb://localhost:3306/vip
+#    url: r2dbc:mariadb://localhost:3307/vip #HOMOLOG
+    url: r2dbc:mariadb://localhost:3306/vip
     username: ${DB_USER:jefao}
     password: ${DB_PASS:jefao}
 
 
-logging: #HOMOLOG - DEV
-  level:
-    org:
-      springframework:
-          r2dbc: DEBUG
+#logging: #HOMOLOG - DEV
+#  level:
+#    org:
+#      springframework:
+#          r2dbc: DEBUG
