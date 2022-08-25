@@ -84,7 +84,7 @@ class WsChatHandler(
                 }
 
             "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
-                .map { whatsChatRepository.findTop50ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company) }
+                .map { whatsChatRepository.findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company) }
                 .orElse(Flux.empty())
                 .collectList()
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
