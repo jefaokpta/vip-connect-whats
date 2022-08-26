@@ -37,6 +37,6 @@ fun destroyInstance(company: Company): CompanyInfo {
 }
 
 fun removeAuthFile(companyId: Long) {
-    val command = "rm -f /opt/whatsMediaHost/auths/auth_info_multi-${companyId}"
+    val command = "rm -f /opt/whatsMediaHost/auths/auth_info_multi-${companyId}.json"
     Runtime.getRuntime().exec(command)
 }
