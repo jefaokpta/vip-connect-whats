@@ -1,6 +1,8 @@
 package br.com.vipsolutions.connect.service
 
-import br.com.vipsolutions.connect.client.*
+import br.com.vipsolutions.connect.client.getProfilePicture
+import br.com.vipsolutions.connect.client.sendQuizAnswerToVip
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.WhatsChat
 import br.com.vipsolutions.connect.model.robot.Greeting
@@ -34,9 +36,7 @@ class MessageService(
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
 //        println("VERIFICANDO CATEGORIA")
         return if (Optional.ofNullable(contact.category).isEmpty){
-            uraRepository.findByCompany(contact.company)
-                .flatMap { uraOptionService.fillOptions(it) }
-                .flatMap{handleRobotMessage(it, whatsChat, contact)}
+            handleRobotMessage(whatsChat, contact)
                 .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
         } else{
             deliverMessageFlow(contact, whatsChat)
@@ -47,35 +47,45 @@ class MessageService(
         .flatMap { deliverMessageFlow(it, whatsChat) }
         .doOnNext { queryOnlineAgents(it) }
 
-    private fun handleRobotMessage(ura: Ura, whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
-        if (AnsweringUraCenter.contacts.containsKey(whatsChat.remoteJid)){
-            val answer = isAnswer(ura, whatsChat, contact)
-            if (answer.isPresent){
-                AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
-                return genericMessage(ura.validOption, answer.get())
+    private fun handleRobotMessage(whatsChat: WhatsChat, contact: Contact): Mono<Contact> {
+        if (AnsweringUraCenter.containsUraAnswer(contact)){
+            val uraAnswer = AnsweringUraCenter.getUraAnswer(contact)
+            val answer = isAnswer(uraAnswer.ura, whatsChat, contact)
+            if (answer.isPresent){ // todo: como fica a transferencia de atendimento?
+                val contactAccerted = answer.get()
+                if (!contactAccerted.subUra.isNullOrBlank()){
+                    return uraRepository.findByVipUraId(contactAccerted.subUra!!.split("-")[1].toLong())
+                        .flatMap { uraOptionService.fillOptions(it) }
+                        .doOnNext { AnsweringUraCenter.addUraAnswer(contact, it) }
+                        .flatMap { buildUraMessage(it, contact) }
+                }
+                AnsweringUraCenter.removeUraAnswer(contact)
+                return genericMessage(uraAnswer.ura.validOption, contactAccerted)
                     .flatMap { categorizedContact(it, whatsChat) }
             }
-            AnsweringUraCenter.contacts[whatsChat.remoteJid] = AnsweringUraCenter.contacts[whatsChat.remoteJid]!! +1
-            println("URA OPCAO INVALIDA NUMERO: ${AnsweringUraCenter.contacts[whatsChat.remoteJid]}")
-            if (AnsweringUraCenter.contacts[whatsChat.remoteJid]!! > 5){
-                if (AnsweringUraCenter.contacts[whatsChat.remoteJid]!! > 10){
+            AnsweringUraCenter.plusUraAnswerCounter(contact)
+            println("URA OPCAO INVALIDA NUMERO: ${AnsweringUraCenter.getUraAnswerCounter(contact)}")
+            if (AnsweringUraCenter.getUraAnswerCounter(contact) > 5){
+                if (AnsweringUraCenter.getUraAnswerCounter(contact) > 10){
                     println("URA OPCAO INVALIDAS - ZERANDO TENTATIVAS")
-                    AnsweringUraCenter.contacts.remove(whatsChat.remoteJid)
+                    AnsweringUraCenter.removeUraAnswer(contact)
                     return Mono.just(contact)
                 }
                 println("URA OPCAO INVALIDAS - BOT IGNORANDO")
                 return Mono.just(contact)
             }
-            return if(ura.invalidOption.isNullOrBlank()){
-                buildUraMessageNoInitialMessage(ura, contact)
-            }else Mono.just(sendTextMessage(contact.whatsapp, ura.invalidOption, contact.instanceId))
+            return if(uraAnswer.ura.invalidOption.isNullOrBlank()){
+                buildUraMessageNoInitialMessage(uraAnswer.ura, contact)
+            }else Mono.just(sendTextMessage(contact.whatsapp, uraAnswer.ura.invalidOption, contact.instanceId))
                 .delayElement(Duration.ofSeconds(2))
-                .flatMap { buildUraMessageNoInitialMessage(ura, contact) }
+                .flatMap { buildUraMessageNoInitialMessage(uraAnswer.ura, contact) }
         }
-        AnsweringUraCenter.contacts[whatsChat.remoteJid] = 0
         Optional.ofNullable(AnsweringQuizCenter.quizzes.remove(contact.whatsapp))
             .map { sendQuizAnswerToVip(it, 0) }
-        return buildUraMessage(ura, contact)
+        return uraRepository.findTop1ByCompanyAndActive(contact.company)
+            .flatMap { uraOptionService.fillOptions(it) }
+            .doOnNext { AnsweringUraCenter.addUraAnswer(contact, it) }
+            .flatMap { buildUraMessage(it, contact) }
     }
 
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
@@ -103,7 +113,7 @@ class MessageService(
                 return
             }
         }
-        uraRepository.findByCompany(contact.company)
+        uraRepository.findTop1ByCompanyAndActive(contact.company)
             .flatMap { genericMessage(it.agentEmpty, contact) }
             .subscribe()
     }
@@ -151,8 +161,12 @@ class MessageService(
         ura.options.forEach { answer ->
             if (answer.option.toString() == whatsChat.text) {
                 return Optional.of(contact.apply {
-                    category = answer.departmentId
-                    lastCategory = answer.departmentId
+                    if (answer.departmentId.contains("subura")){
+                        subUra = answer.departmentId
+                    } else{
+                        category = answer.departmentId.toLong()
+                        lastCategory = answer.departmentId.toLong()
+                    }
                 })
             }
         }

@@ -10,6 +10,6 @@ class UraOption(
     var uraId: Long,
     val option: Int,
     val department: String,
-    val departmentId: Long
+    val departmentId: String
 ) {
 }

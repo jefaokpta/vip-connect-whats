@@ -31,5 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
-docker/dbdata/
+docker/mariadb-data/
 docker/*.jar

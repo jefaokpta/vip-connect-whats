@@ -12,8 +12,8 @@ spring:
     password: ${DB_PASS:jefao}
 
 
-#logging: #HOMOLOG - DEV
-#  level:
-#    org:
-#      springframework:
-#          r2dbc: DEBUG
+logging: #HOMOLOG - DEV
+  level:
+    org:
+      springframework:
+          r2dbc: DEBUG

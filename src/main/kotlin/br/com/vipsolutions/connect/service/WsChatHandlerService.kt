@@ -48,7 +48,7 @@ class WsChatHandlerService(
         return contactRepository.save(contact)
     }
 
-    fun finalizeAttendance(contact: Contact) = uraRepository.findByCompany(contact.company)
+    fun finalizeAttendance(contact: Contact) = uraRepository.findTop1ByCompanyAndActive(contact.company)
         .map { Optional.ofNullable(it.finalMessage) }
         .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
 
@@ -59,12 +59,12 @@ class WsChatHandlerService(
             .collectList()
     }
 
-    fun sendTransferMessage(contact: Contact) = uraRepository.findByCompany(contact.company)
+    fun sendTransferMessage(contact: Contact) = uraRepository.findTop1ByCompanyAndActive(contact.company)
         .map { uraOptionRepository.findAllByUraId(it.id) }
         .flatMap { it.collectList() }
         .map { options ->
             options.forEach { option ->
-                if (option.departmentId == contact.category){
+                if (option.departmentId.toLong() == contact.category){
                     sendTextMessage(contact.whatsapp, "Você está no Departamento: ${option.department}", contact.instanceId)
                 }
             }

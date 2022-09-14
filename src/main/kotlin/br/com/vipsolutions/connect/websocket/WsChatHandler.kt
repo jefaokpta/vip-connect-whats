@@ -157,7 +157,7 @@ class WsChatHandler(
                 contact.lastCategory = contact.category?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO DEFINIR CATEGORIA!" })))
                 contact.fromAgent = true
                 contactRepository.save(generateProtocol(contact))
-                    .doOnNext { AnsweringUraCenter.contacts.remove(it.whatsapp) }
+                    .doOnNext { AnsweringUraCenter.removeUraAnswer(it) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .publishOn(Schedulers.boundedElastic())
                     .doFinally {

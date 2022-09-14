@@ -7,14 +7,14 @@ services:
 #    networks:
 #      - whats-network
   db-vip-whats:
-    image: mariadb:10
+    image: mariadb:10.9.2
     environment:
       - MYSQL_ROOT_PASSWORD=jefao123
       - MYSQL_DATABASE=vip
       - MYSQL_USER=jefao
       - MYSQL_PASSWORD=jefao
     volumes:
-      - ./dbdata:/var/lib/mysql
+      - ./mariadb-data:/var/lib/mysql
     ports:
       - 3306:3306
 #    networks:

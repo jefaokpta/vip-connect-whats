@@ -32,6 +32,8 @@ data class Contact(
     var newMessage = false
     @Transient
     var newMessageQtde = 0
+    @Transient
+    var subUra: String? = null
 
     constructor(contactDAO: ContactDAO) : this(
         id = 0,

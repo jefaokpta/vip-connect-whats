@@ -10,6 +10,9 @@ import reactor.core.publisher.Mono
  */
 interface UraRepository: ReactiveCrudRepository<Ura, Long> {
 
-    fun findByCompany(company: Long): Mono<Ura>
+    fun findTop1ByCompanyAndActive(company: Long, active: Boolean = true): Mono<Ura>
+
+    fun findByVipUraId(vipUraId: Long): Mono<Ura>
+
     fun findByControlNumber(controlNumber: Long): Mono<Ura>
 }
