@@ -66,6 +66,7 @@ class WsChatHandlerService(
             options.forEach { option ->
                 if (option.departmentId.toLong() == contact.category){
                     sendTextMessage(contact.whatsapp, "Você está no Departamento: ${option.department}", contact.instanceId)
+                    return@forEach
                 }
             }
         }

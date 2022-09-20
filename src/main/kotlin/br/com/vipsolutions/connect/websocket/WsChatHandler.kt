@@ -176,7 +176,7 @@ class WsChatHandler(
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
                         alertNewMessageToAgents(contact).subscribe()
-                        wsChatHandlerService.sendTransferMessage(contact).subscribe()
+                        wsChatHandlerService.sendTransferMessage(contact).subscribe() //todo: se me mandar o nome do departamento, eu mando a mensagem de transferencia
                     }
             }
             "CREATE_GROUP" -> {

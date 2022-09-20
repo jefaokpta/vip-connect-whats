@@ -31,6 +31,7 @@ fun startInstance(company: Company): CompanyInfo {
 
 fun destroyInstance(company: Company): CompanyInfo {
     val command = "docker rm -f whats-${company.id}"
+    println("DESTRUINDO INSTANCIA whats-${company.id}")
     return Runtime.getRuntime().exec(command).inputStream.bufferedReader().lines().findFirst()
         .map{CompanyInfo(company, it)}
         .orElse(CompanyInfo(company, "Container Inexistente"))
