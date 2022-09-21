@@ -61,15 +61,6 @@ class WsChatHandler(
                     agentActionWs.action,
                     agentActionWs.agent,
                     agentActionWs.controlNumber,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
                 )))))
 
             "CONTACT_ANSWERED" -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
@@ -176,7 +167,7 @@ class WsChatHandler(
                     .doFinally {
                         unlockContact(contact, agentActionWs.agent).subscribe()
                         alertNewMessageToAgents(contact).subscribe()
-                        wsChatHandlerService.sendTransferMessage(contact).subscribe() //todo: se me mandar o nome do departamento, eu mando a mensagem de transferencia
+                        sendTextMessage(contact.whatsapp, "Você está no Departamento: ${agentActionWs.categoryName}", contact.instanceId)
                     }
             }
             "CREATE_GROUP" -> {

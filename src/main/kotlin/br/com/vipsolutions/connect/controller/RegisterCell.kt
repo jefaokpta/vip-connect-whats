@@ -23,7 +23,7 @@ import java.util.*
 class RegisterCell(private val authWhatsappRepository: AuthWhatsappRepository, private val companyRepository: CompanyRepository) {
 
     @GetMapping("/status/{controlNumber}")
-    fun companyStatus(@PathVariable controlNumber: Long) = companyRepository.findById(controlNumber)
+    fun companyStatus(@PathVariable controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
         .map { CompanyInfo(it, "") }
         .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada")))
 
