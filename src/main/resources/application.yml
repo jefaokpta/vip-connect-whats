@@ -1,7 +1,7 @@
 ## ATENCAO PRO AMBIENTE HOMOLOG: PORTA BANCO 3307 E PORTA WEB 9090! E DESATIVA LOGGING DE SQL
 server:
   error:
-    include-stacktrace: on_param
+    include-stacktrace: on_param # ?trace=true
 
 spring:
   r2dbc:

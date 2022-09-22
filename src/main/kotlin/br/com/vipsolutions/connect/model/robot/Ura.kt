@@ -36,5 +36,7 @@ data class Ura(
         ura.invalidOption,
         ura.validOption,
         ura.finalMessage
-    )
+    ){
+        this.options = ura.options
+    }
 }

@@ -27,4 +27,10 @@ class UraOptionService(
 
     fun setUraIdInOptions(options: List<UraOption>, uraId: Long) = options
         .apply { map { it.uraId = uraId } }
+
+    fun updateUraOptions(ura: Ura) = uraOptionRepository.deleteAllByUraId(ura.id)
+        .then(uraOptionRepository.saveAll(setUraIdInOptions(ura.options, ura.id)).collectList())
+
+    fun deleteUraAndUraOptions(ura: Ura) = uraRepository.delete(ura)
+        .then(uraOptionRepository.deleteAllByUraId(ura.id))
 }

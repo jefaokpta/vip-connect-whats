@@ -5,7 +5,6 @@ import br.com.vipsolutions.connect.repository.UraOptionRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.service.UraOptionService
 import org.springframework.web.bind.annotation.*
-import reactor.core.scheduler.Schedulers
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -24,19 +23,17 @@ class UraController(
         .flatMap { uraOptionService.fillOptions(it) }
 
     @PostMapping
-    fun save(@RequestBody ura: Ura) = uraRepository.findByControlNumber(ura.controlNumber)
-        .doFirst { println("POST URA $ura"); println("POST URA OPTIONS ${ura.options}") }
-        .flatMap { uraRepository.save(Ura(ura, it)) }
-        .switchIfEmpty(uraOptionService.saveUraWithCompany(ura))
-        .publishOn(Schedulers.boundedElastic())
-        .doOnNext{uraOptionRepository.deleteAllByUraId(it.id).subscribe()}
+    fun save(@RequestBody ura: Ura) = uraOptionService.saveUraWithCompany(ura)
+        .doFirst { println("CREATE URA $ura"); println("CREATE URA OPTIONS ${ura.options}") }
         .flatMap { uraOptionRepository.saveAll(uraOptionService.setUraIdInOptions(ura.options, it.id)).collectList() }
-//        .then()
-//        .log()
 
-    @DeleteMapping("/{controlNumber}")
-    fun delete(@PathVariable controlNumber: Long) = uraRepository.findByControlNumber(controlNumber)
-        .publishOn(Schedulers.boundedElastic())
-        .doOnNext{uraOptionRepository.deleteAllByUraId(it.id).subscribe()}
-        .flatMap { uraRepository.deleteById(it.id) }
+    @PutMapping
+    fun update(@RequestBody ura: Ura) = uraRepository.findByControlNumberAndVipUraId(ura.controlNumber, ura.vipUraId)
+        .doFirst { println("UPDATE URA $ura"); println("UPDATE URA OPTIONS ${ura.options}") }
+        .flatMap { uraRepository.save(Ura(ura, it)) }
+        .flatMap { uraOptionService.updateUraOptions(it)}
+
+    @DeleteMapping("/{controlNumber}/{vipUraId}")
+    fun delete(@PathVariable controlNumber: Long, @PathVariable vipUraId: Long) = uraRepository.findByControlNumberAndVipUraId(controlNumber, vipUraId)
+        .flatMap { uraOptionService.deleteUraAndUraOptions(it) }
 }

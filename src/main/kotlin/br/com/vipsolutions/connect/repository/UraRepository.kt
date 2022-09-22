@@ -12,7 +12,7 @@ interface UraRepository: ReactiveCrudRepository<Ura, Long> {
 
     fun findTop1ByCompanyAndActive(company: Long, active: Boolean = true): Mono<Ura>
 
-    fun findByVipUraId(vipUraId: Long): Mono<Ura>
+    fun findByCompanyAndVipUraId(company: Long, vipUraId: Long): Mono<Ura>
 
-    fun findByControlNumber(controlNumber: Long): Mono<Ura>
+    fun findByControlNumberAndVipUraId(controlNumber: Long, vipUraId: Long): Mono<Ura>
 }

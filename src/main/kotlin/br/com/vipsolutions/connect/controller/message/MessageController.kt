@@ -93,7 +93,6 @@ class MessageController(
                 .flatMap { messageService.verifyMessageCategory(it, whatsChat.apply { protocol = it.protocol }) }
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, 0)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
-//                .log()
         }
     }
 

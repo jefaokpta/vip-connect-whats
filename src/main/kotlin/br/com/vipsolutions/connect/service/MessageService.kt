@@ -52,7 +52,7 @@ class MessageService(
             if (answer.isPresent){
                 val contactAccerted = answer.get()
                 if (!contactAccerted.subUra.isNullOrBlank()){
-                    return uraRepository.findByVipUraId(contactAccerted.subUra!!.split("-")[1].toLong())
+                    return uraRepository.findByCompanyAndVipUraId(contactAccerted.company, contactAccerted.subUra!!.split("-")[1].toLong())
                         .flatMap { uraOptionService.fillOptions(it) }
                         .doOnNext { AnsweringUraCenter.addUraAnswer(contactAccerted, it) }
                         .flatMap { buildUraMessage(it, contactAccerted) }
