@@ -34,10 +34,8 @@ class MessageService(
 ) {
 
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
-//        println("VERIFICANDO CATEGORIA")
         return if (Optional.ofNullable(contact.category).isEmpty){
             handleRobotMessage(whatsChat, contact)
-                .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
         } else{
             deliverMessageFlow(contact, whatsChat)
         }
@@ -51,17 +49,17 @@ class MessageService(
         if (AnsweringUraCenter.containsUraAnswer(contact)){
             val uraAnswer = AnsweringUraCenter.getUraAnswer(contact)
             val answer = isAnswer(uraAnswer.ura, whatsChat, contact)
-            if (answer.isPresent){ // todo: como fica a transferencia de atendimento?
+            if (answer.isPresent){
                 val contactAccerted = answer.get()
                 if (!contactAccerted.subUra.isNullOrBlank()){
                     return uraRepository.findByVipUraId(contactAccerted.subUra!!.split("-")[1].toLong())
                         .flatMap { uraOptionService.fillOptions(it) }
-                        .doOnNext { AnsweringUraCenter.addUraAnswer(contact, it) }
-                        .flatMap { buildUraMessage(it, contact) }
+                        .doOnNext { AnsweringUraCenter.addUraAnswer(contactAccerted, it) }
+                        .flatMap { buildUraMessage(it, contactAccerted) }
                 }
-                AnsweringUraCenter.removeUraAnswer(contact)
-                return genericMessage(uraAnswer.ura.validOption, contactAccerted)
-                    .flatMap { categorizedContact(it, whatsChat) }
+                AnsweringUraCenter.removeUraAnswer(contactAccerted)
+                genericMessage(uraAnswer.ura.validOption, contactAccerted)
+                return categorizedContact(contactAccerted, whatsChat)
             }
             AnsweringUraCenter.plusUraAnswerCounter(contact)
             println("URA OPCAO INVALIDA NUMERO: ${AnsweringUraCenter.getUraAnswerCounter(contact)}")
@@ -86,6 +84,7 @@ class MessageService(
             .flatMap { uraOptionService.fillOptions(it) }
             .doOnNext { AnsweringUraCenter.addUraAnswer(contact, it) }
             .flatMap { buildUraMessage(it, contact) }
+            .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
     }
 
     fun askContactName(remoteJid: String, company: Long, instanceId: Int, whatsChat: WhatsChat) = greetingRepository.findByCompany(company)
@@ -114,7 +113,7 @@ class MessageService(
             }
         }
         uraRepository.findTop1ByCompanyAndActive(contact.company)
-            .flatMap { genericMessage(it.agentEmpty, contact) }
+            .map { genericMessage(it.agentEmpty, contact) }
             .subscribe()
     }
 
@@ -126,10 +125,10 @@ class MessageService(
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
 
-    private fun genericMessage(message: String?, contact: Contact): Mono<Contact> {
+    private fun genericMessage(message: String?, contact: Contact): Contact {
         Optional.ofNullable(message)
             .map { sendTextMessage(contact.whatsapp, it, contact.instanceId) }
-        return Mono.just(contact)
+        return contact
     }
 
     private fun robotAskContactName(remoteJid: String, greeting: Greeting, instanceId: Int, whatsChat: WhatsChat,company: Long): Mono<Contact>{

@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("uras_options")
-class UraOption(
+data class UraOption(
     @Id
     var id: Long,
     var uraId: Long,
