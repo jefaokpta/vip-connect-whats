@@ -17,5 +17,5 @@ interface UraRepository: ReactiveCrudRepository<Ura, Long> {
 
     fun findByControlNumberAndVipUraId(controlNumber: Long, vipUraId: Long): Mono<Ura>
 
-    fun findAllByControlNumber(controlNumber: Long): Flux<Ura>
+    fun findAllByControlNumberAndActive(controlNumber: Long, active: Boolean = true): Flux<Ura>
 }

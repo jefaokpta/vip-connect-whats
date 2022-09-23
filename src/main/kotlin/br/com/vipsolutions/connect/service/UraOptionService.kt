@@ -49,8 +49,9 @@ class UraOptionService(
 
     private fun verifyUraActive(ura: Ura): Mono<Ura> {
         if (ura.active) {
-            return uraRepository.findAllByControlNumber(ura.controlNumber)
+            return uraRepository.findAllByControlNumberAndActive(ura.controlNumber)
                 .filter { it.id != ura.id }
+                .doOnNext { println(it) }
                 .flatMap { uraRepository.save(it.copy(active = false)) }
                 .then(Mono.just(ura))
         }
