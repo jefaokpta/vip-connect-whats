@@ -13,6 +13,7 @@ import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.*
 import br.com.vipsolutions.connect.websocket.SessionCentral
 import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
+import br.com.vipsolutions.connect.websocket.broadcastToAgents
 import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -30,7 +31,8 @@ class MessageService(
     private val contactRepository: ContactRepository,
     private val greetingRepository: GreetingRepository,
     private val uraRepository: UraRepository,
-    private val uraOptionService: UraOptionService
+    private val uraOptionService: UraOptionService,
+    private val wsChatHandlerService: WsChatHandlerService
 ) {
 
     fun verifyMessageCategory(contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
@@ -120,10 +122,17 @@ class MessageService(
     private fun deliverMessageFlow(contact: Contact, whatsChat: WhatsChat) = Mono.just(contact)
         .map { contactOnAttendance(it, whatsChat) }
         .map { addContactCenter(contact.company, it) }
+        .flatMap{verifyClientRequestToFinalize(contact, whatsChat)}
         .flatMap { updateContactLastMessage(it, whatsChat.datetime, whatsChat.messageId) }
         .publishOn(Schedulers.boundedElastic())
         .doFinally { alertNewMessageToAgents(contact).subscribe() }
 
+    private fun verifyClientRequestToFinalize(contact: Contact, whatsChat: WhatsChat) = if (whatsChat.text == "#"){
+        println("CLIENTE ${contact.name} SOLICITOU FINALIZAR ATENDIMENTO")
+        wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
+            .publishOn(Schedulers.boundedElastic())
+            .doFinally { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
+    } else Mono.just(contact)
 
     private fun genericMessage(message: String?, contact: Contact): Contact {
         Optional.ofNullable(message)

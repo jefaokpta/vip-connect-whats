@@ -7,7 +7,6 @@ import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.ContactAndQuiz
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.QuizRepository
-import br.com.vipsolutions.connect.repository.UraOptionRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.AnsweringQuizCenter
 import br.com.vipsolutions.connect.websocket.SessionCentral
@@ -23,7 +22,6 @@ import java.util.*
 class WsChatHandlerService(
     private val contactRepository: ContactRepository,
     private val uraRepository: UraRepository,
-    private val uraOptionRepository: UraOptionRepository,
     private val quizRepository: QuizRepository,
 ) {
 
