@@ -10,6 +10,7 @@ data class FileUpload(
     val fileType: String,
     val ptt: Boolean = false,
     val caption: String?,
-    var filePath: String?
+    var filePath: String?,
+    val messageGroupId: Long?
 ) {
 }

@@ -33,4 +33,16 @@ class FileUploadController {
             .onErrorResume { Mono.error(ResponseStatusException(HttpStatus.BAD_GATEWAY, "${it.message} - Pode ser que o container node esteja fora do ar.")) }
     }
 
+    @CrossOrigin
+    @PostMapping("/list")
+    fun mediaGroupMessage(@RequestPart("fileJson") fileJson: String, @RequestPart("file") filePartMono: Mono<FilePart>): Mono<Void> {
+        val fileUpload = Gson().fromJson(fileJson, FileUpload::class.java)
+        println(fileJson)
+        return filePartMono
+            .doOnNext { fileUpload.filePath = it.filename() }
+            .delayUntil { it.transferTo(basePath.resolve(it.filename())) }
+            .flatMap { sendMediaMessage(fileUpload) }
+            .onErrorResume { Mono.error(ResponseStatusException(HttpStatus.BAD_GATEWAY, "${it.message} - Pode ser que o container node esteja fora do ar.")) }
+    }
+
 }
