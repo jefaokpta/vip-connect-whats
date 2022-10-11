@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.service
 
 import br.com.vipsolutions.connect.client.sendMediaMessage
+import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.*
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupRepository
@@ -42,9 +43,9 @@ class GroupService(
             return
         }
         contactRepository.findAllById(group.contactsId.split(",").map(String::toLong))
-            .map { sendIndividualMessage(it, groupMessage) }
             .limitRate(1)
             .delayElements(Duration.ofSeconds(2))
+            .map { sendIndividualMessage(it, groupMessage) }
             .subscribe()
     }
 
@@ -54,15 +55,15 @@ class GroupService(
             return
         }
         contactRepository.findAllById(group.contactsId.split(",").map(String::toLong))
-            .flatMap { sendMediaMessage(fileUpload.copy(remoteJid = it.whatsapp, instanceId = it.instanceId)) }
-            .limitRate(1) // todo: esta mandando td de uma vez, precisa respeitar o delay
+            .limitRate(1)
             .delayElements(Duration.ofSeconds(2))
+            .flatMap { sendMediaMessage(fileUpload.copy(remoteJid = it.whatsapp, instanceId = it.instanceId)) }
             .subscribe()
     }
 
     private fun sendIndividualMessage(contact: Contact, groupMessage: GroupMessage) {
         println("Mandando Mensagem de Grupo '${groupMessage.message}' ${groupMessage.groupId} para ${contact.name} - ${contact.whatsapp}")
-//        sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
+        sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
     }
 
     fun getAllGroupsByControlNumber(controlNumber: Long) = groupRepository.findAllByControlNumber(controlNumber)

@@ -159,7 +159,6 @@ class SessionCentral {
         private fun forceUnlockContactByContact(contact: Contact) {
             agents[contact.company]?.forEach { agent ->
                 if (agent.value.contact?.id == contact.id) {
-                    println("forçando desbloqueio do contato ${contact.id} ") // todo: remover
                     agent.value.contact = null
                 }
             }

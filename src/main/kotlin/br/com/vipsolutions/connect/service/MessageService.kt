@@ -125,7 +125,6 @@ class MessageService(
         .doFinally { SessionCentral.alertNewMessageToAgents(contact).subscribe() }
 
     private fun verifyClientRequestToFinalize(contact: Contact, whatsChat: WhatsChat) = if (whatsChat.text == "#"){
-        println("CLIENTE ${contact.name} SOLICITOU FINALIZAR ATENDIMENTO") // todo: remover
         ContactCenter.remove(contact.company, contact.id)
         wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
             .publishOn(Schedulers.boundedElastic())

@@ -122,7 +122,7 @@ class WsChatHandler(
                 val contact = agentActionWs.contact?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_CONTACT_ERROR_MESSAGE })))
                 wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
-                    .publishOn(Schedulers.boundedElastic()) // todo: oq vai acontecer com a tela do agente se o contato for finalizado pelo cliente?
+                    .publishOn(Schedulers.boundedElastic())
                     .doFinally { SessionCentral.broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }
 
