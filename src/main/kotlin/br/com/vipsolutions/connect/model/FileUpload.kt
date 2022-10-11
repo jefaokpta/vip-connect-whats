@@ -5,8 +5,8 @@ package br.com.vipsolutions.connect.model
  * Date: 17/08/21
  */
 data class FileUpload(
-    val remoteJid: String,
-    val instanceId: Int,
+    val remoteJid: String?,
+    val instanceId: Int?,
     val fileType: String,
     val ptt: Boolean = false,
     val caption: String?,

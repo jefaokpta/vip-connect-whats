@@ -51,7 +51,7 @@ class WsChatHandlerService(
         .map { if (it.isPresent) sendTextMessage(contact.whatsapp, it.get(), contact.instanceId) }
 
     fun contactsFilteredByLastCategory(company: Company, agent: Int): Mono<MutableList<Contact>> {
-        val agentCategories = SessionCentral.agents[company.id]?.get(agent)?.categories ?: return Mono.empty()
+        val agentCategories = SessionCentral.getAllByCompanyId(company.id)?.get(agent)?.categories ?: return Mono.empty()
         return contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id)
             .filter { agentCategories.contains(it.lastCategory) }
             .collectList()

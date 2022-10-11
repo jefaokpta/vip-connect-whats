@@ -18,12 +18,12 @@ class AgentController(private val companyRepository: CompanyRepository) {
 
     @GetMapping("/{controlNumber}")
     fun listMemoryAgentSessions(@PathVariable controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
-        .flatMap { Mono.justOrEmpty(SessionCentral.agents[it.id]) }
+        .flatMap { Mono.justOrEmpty(SessionCentral.getAllByCompanyId(it.id)) }
         .map { it.keys.toList() }
         .switchIfEmpty(Mono.just(listOf()))
 
     @GetMapping
-    fun listAllMemoryAgentSessions() = Mono.justOrEmpty(SessionCentral.agents)
+    fun listAllMemoryAgentSessions() = Mono.justOrEmpty(SessionCentral.getAll())
         .map { it.keys.toList() }
         .switchIfEmpty(Mono.just(listOf()))
 }

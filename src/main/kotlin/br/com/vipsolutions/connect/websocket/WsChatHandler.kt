@@ -37,7 +37,7 @@ class WsChatHandler(
 
     override fun handle(session: WebSocketSession) = session.send(session.receive()
         .flatMap { handleAgentActions(it, session) }
-        .doFinally { removeAgentSession(session)}
+        .doFinally { SessionCentral.removeAgentSession(session)}
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
@@ -45,13 +45,13 @@ class WsChatHandler(
 
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
-                .map { addAgentSession(it, agentActionWs, webSocketSession)  }
+                .map { SessionCentral.addAgentSession(it, agentActionWs, webSocketSession)  }
                 .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
                 .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
-                .map { contacts -> contacts.filter { !it.fromAgent }}
-                .map (::contactsHaveNewMessages)
-                .map { verifyLockedContacts(it) }
+//                .map { contacts -> contacts.filter { !it.fromAgent }} // DESATIVADO PRA VER ONDE QUEBRA
+                .map (ContactCenter::contactsHaveNewMessages)
+                .map { SessionCentral.verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "UPDATE_CONTACT" -> Mono.justOrEmpty(agentActionWs.contact)
@@ -67,10 +67,10 @@ class WsChatHandler(
                 .doFinally {
                     Optional.ofNullable(agentActionWs.contact)
                         .map {
-                            ContactCenter.contacts[it.company]?.remove(it.id)
-                            clearNewMessageToAgents(it).subscribe()
-                            unlockContact(it, agentActionWs.agent).subscribe()
-                            lockContact(it, agentActionWs.agent).subscribe()
+                            ContactCenter.remove(it.company, it.id)
+                            SessionCentral.clearNewMessageToAgents(it).subscribe()
+                            SessionCentral.unlockContact(it, agentActionWs.agent).subscribe()
+                            SessionCentral.lockContact(it, agentActionWs.agent).subscribe()
                         }
                 }
 
@@ -99,11 +99,11 @@ class WsChatHandler(
                         return contactRepository.save(agentActionWs.contact!!)
                             .map { webSocketSession.textMessage(objectToJson(agentActionWs)) }
                             .publishOn(Schedulers.boundedElastic())
-                            .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
+                            .doFinally { SessionCentral.unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
                     }
                     return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs)))
                         .publishOn(Schedulers.boundedElastic())
-                        .doFinally { unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
+                        .doFinally { SessionCentral.unlockContact(agentActionWs.contact!!, agentActionWs.agent).subscribe() }
                 }
                 agentActionWs.action = "ERROR"
                 agentActionWs.errorMessage = "FALTANDO CONTATO OU AGENTE"
@@ -123,7 +123,7 @@ class WsChatHandler(
                 wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { action = "FINALIZE_ATTENDANCE_RESPONSE" })) }
                     .publishOn(Schedulers.boundedElastic()) // todo: oq vai acontecer com a tela do agente se o contato for finalizado pelo cliente?
-                    .doFinally { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
+                    .doFinally { SessionCentral.broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
             }
 
             "LIST_CONTACTS_LAST_CATEGORY" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
@@ -133,8 +133,8 @@ class WsChatHandler(
             "LIST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
                 .flatMap { it.collectList() }
-                .map (::contactsHaveNewMessages)
-                .map { verifyLockedContacts(it) }
+                .map(ContactCenter::contactsHaveNewMessages)
+                .map { SessionCentral.verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "LIST_ALL_CONTACTS_LITE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
@@ -152,8 +152,8 @@ class WsChatHandler(
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .publishOn(Schedulers.boundedElastic())
                     .doFinally {
-                        unlockContact(contact, agentActionWs.agent).subscribe()
-                        lockContact(contact, agentActionWs.agent).subscribe()
+                        SessionCentral.unlockContact(contact, agentActionWs.agent).subscribe()
+                        SessionCentral.lockContact(contact, agentActionWs.agent).subscribe()
                     }
             }
 
@@ -165,8 +165,8 @@ class WsChatHandler(
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contact = it })) }
                     .publishOn(Schedulers.boundedElastic())
                     .doFinally {
-                        unlockContact(contact, agentActionWs.agent).subscribe()
-                        alertNewMessageToAgents(contact).subscribe()
+                        SessionCentral.unlockContact(contact, agentActionWs.agent).subscribe()
+                        SessionCentral.alertNewMessageToAgents(contact).subscribe()
                         sendTextMessage(contact.whatsapp, "Você está no Departamento: ${agentActionWs.categoryName}", contact.instanceId)
                     }
             }

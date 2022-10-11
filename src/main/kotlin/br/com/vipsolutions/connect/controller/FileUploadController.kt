@@ -2,6 +2,7 @@ package br.com.vipsolutions.connect.controller
 
 import br.com.vipsolutions.connect.client.sendMediaMessage
 import br.com.vipsolutions.connect.model.FileUpload
+import br.com.vipsolutions.connect.service.GroupService
 import br.com.vipsolutions.connect.util.EnvironmentVarCenter
 import com.google.gson.Gson
 import org.springframework.http.HttpStatus
@@ -17,7 +18,7 @@ import java.nio.file.Paths
  */
 @RestController
 @RequestMapping("/api/upload")
-class FileUploadController {
+class FileUploadController(private val groupService: GroupService) {
 
     private val basePath = Paths.get(EnvironmentVarCenter.environmentVar.uploadedFileFolder!!)
 
@@ -36,12 +37,16 @@ class FileUploadController {
     @CrossOrigin
     @PostMapping("/list")
     fun mediaGroupMessage(@RequestPart("fileJson") fileJson: String, @RequestPart("file") filePartMono: Mono<FilePart>): Mono<Void> {
-        val fileUpload = Gson().fromJson(fileJson, FileUpload::class.java)
         println(fileJson)
+        val fileUpload = Gson().fromJson(fileJson, FileUpload::class.java)
+        if(fileUpload.messageGroupId == null) {
+            return Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, "O id do grupo não pode ser nulo"))
+        }
         return filePartMono
             .doOnNext { fileUpload.filePath = it.filename() }
             .delayUntil { it.transferTo(basePath.resolve(it.filename())) }
-            .flatMap { sendMediaMessage(fileUpload) }
+            .flatMap { groupService.sendGroupMessage(fileUpload) }
+            .then()
             .onErrorResume { Mono.error(ResponseStatusException(HttpStatus.BAD_GATEWAY, "${it.message} - Pode ser que o container node esteja fora do ar.")) }
     }
 

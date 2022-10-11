@@ -10,46 +10,51 @@ import br.com.vipsolutions.connect.model.ws.MessageCount
  */
 class ContactCenter {
     companion object{
-        val contacts = mutableMapOf<Long, MutableMap<Long, MessageCount>>()
-    }
+        private val contacts = mutableMapOf<Long, MutableMap<Long, MessageCount>>()
 
-}
+        fun findOne(id: Long): MutableMap<Long, MessageCount>? {
+            return contacts[id]
+        }
 
-fun addContactCenter(company: Long, contact: Contact): Contact {
-    if (!contact.busy){
-        if(ContactCenter.contacts.contains(company)){
-            if(ContactCenter.contacts[company]!!.contains(contact.id)){
-                val messageCount = ContactCenter.contacts[company]!![contact.id]!!
-                messageCount.message = messageCount.message + 1
-                contact.newMessageQtde = messageCount.message
-                contact.newMessage = true
+        fun remove(companyId: Long, contactId: Long) {
+            contacts[companyId]?.remove(contactId)
+        }
+        fun addContactCenter(company: Long, contact: Contact): Contact {
+            if (!contact.busy){
+                if(contacts.contains(company)){
+                    if(contacts[company]!!.contains(contact.id)){
+                        val messageCount = contacts[company]!![contact.id]!!
+                        messageCount.message = messageCount.message + 1
+                        contact.newMessageQtde = messageCount.message
+                        contact.newMessage = true
+                    }
+                    else{
+                        contact.newMessageQtde = 1
+                        contact.newMessage = true
+                        contacts[company]!![contact.id] = MessageCount(contact.id)
+                    }
+                }
+                else{
+                    contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
+                    contact.newMessageQtde = 1
+                    contact.newMessage = true
+                }
             }
-            else{
-                contact.newMessageQtde = 1
-                contact.newMessage = true
-                ContactCenter.contacts[company]!![contact.id] = MessageCount(contact.id)
+            return contact
+        }
+        fun contactsHaveNewMessages(contactList: List<Contact>): ContactsAndId {
+            if (contactList.isEmpty()){
+                return ContactsAndId(contactList, 0)
             }
-        }
-        else{
-            ContactCenter.contacts[company] = mutableMapOf(contact.id to MessageCount(contact.id))
-            contact.newMessageQtde = 1
-            contact.newMessage = true
-        }
-    }
-    return contact
-}
-
-fun contactsHaveNewMessages(contacts: List<Contact>): ContactsAndId {
-    if (contacts.isEmpty()){
-        return ContactsAndId(contacts, 0)
-    }
-    val contactsAndId = ContactsAndId(contacts, contacts[0].company)
-    val contactMap = ContactCenter.contacts[contactsAndId.companyId] ?: return contactsAndId
-    contacts.forEach{ contact ->
-        if (contactMap.containsKey(contact.id)) {
-            contact.newMessage = true
-            contact.newMessageQtde = contactMap[contact.id]!!.message
+            val contactsAndId = ContactsAndId(contactList, contactList[0].company)
+            val contactMap = contacts[contactsAndId.companyId] ?: return contactsAndId
+            contactList.forEach{ contact ->
+                if (contactMap.containsKey(contact.id)) {
+                    contact.newMessage = true
+                    contact.newMessageQtde = contactMap[contact.id]!!.message
+                }
+            }
+            return contactsAndId
         }
     }
-    return contactsAndId
 }

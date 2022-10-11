@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono
 class ContactController(private val contactService: ContactService) {
 
     @GetMapping("/memory/company/{company}")
-    fun listMemoryContacts(@PathVariable company: Long) = Mono.justOrEmpty(ContactCenter.contacts[company])
+    fun listMemoryContacts(@PathVariable company: Long) = Mono.justOrEmpty(ContactCenter.findOne(company))
         .map { it.values.toList() }
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "lista não encontrado.")))
 

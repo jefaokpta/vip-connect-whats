@@ -9,7 +9,7 @@ import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.MessageService
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.AnsweringQuizCenter
-import br.com.vipsolutions.connect.websocket.contactOnAttendance
+import br.com.vipsolutions.connect.websocket.SessionCentral
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.springframework.web.bind.annotation.*
@@ -76,7 +76,7 @@ class MessageController(
 
         return if(fromMe){
             contactRepository.findByWhatsappAndCompany(whatsChat.remoteJid, company)
-                .map { contactOnAttendance(it, whatsChat.apply { protocol = it.protocol })}
+                .map { SessionCentral.contactOnAttendance(it, whatsChat.apply { protocol = it.protocol })}
                 .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
                 .flatMap { whatsChatRepository.findById(messageId) }
                 .flatMap { dbWhatsChat ->

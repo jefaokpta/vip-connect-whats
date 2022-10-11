@@ -1,10 +1,7 @@
 package br.com.vipsolutions.connect.service
 
-import br.com.vipsolutions.connect.client.sendTextMessage
-import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.Group
-import br.com.vipsolutions.connect.model.GroupDAO
-import br.com.vipsolutions.connect.model.GroupMessage
+import br.com.vipsolutions.connect.client.sendMediaMessage
+import br.com.vipsolutions.connect.model.*
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupRepository
 import org.springframework.stereotype.Service
@@ -36,6 +33,9 @@ class GroupService(
     fun sendGroupMessage(groupMessage: GroupMessage) = groupRepository.findById(groupMessage.groupId)
         .doOnNext { runItAfter(groupMessage, it) }
 
+    fun sendGroupMessage(fileUpload: FileUpload) = groupRepository.findById(fileUpload.messageGroupId!!)
+        .doOnNext { runItAfter(it, fileUpload ) }
+
     private fun runItAfter(groupMessage: GroupMessage, group: Group){
         println("Enviando mensagem para o grupo ${groupMessage.groupId}")
         if (group.contactsId.isEmpty()){
@@ -48,9 +48,21 @@ class GroupService(
             .subscribe()
     }
 
+    private fun runItAfter(group: Group, fileUpload: FileUpload){
+        println("Enviando Media para o grupo ${fileUpload.messageGroupId}")
+        if (group.contactsId.isEmpty()){
+            return
+        }
+        contactRepository.findAllById(group.contactsId.split(",").map(String::toLong))
+            .flatMap { sendMediaMessage(fileUpload.copy(remoteJid = it.whatsapp, instanceId = it.instanceId)) }
+            .limitRate(1) // todo: esta mandando td de uma vez, precisa respeitar o delay
+            .delayElements(Duration.ofSeconds(2))
+            .subscribe()
+    }
+
     private fun sendIndividualMessage(contact: Contact, groupMessage: GroupMessage) {
         println("Mandando Mensagem de Grupo '${groupMessage.message}' ${groupMessage.groupId} para ${contact.name} - ${contact.whatsapp}")
-        sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
+//        sendTextMessage(contact.whatsapp, groupMessage.message, contact.instanceId)
     }
 
     fun getAllGroupsByControlNumber(controlNumber: Long) = groupRepository.findAllByControlNumber(controlNumber)

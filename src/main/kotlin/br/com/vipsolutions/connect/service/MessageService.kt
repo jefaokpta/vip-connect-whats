@@ -12,9 +12,6 @@ import br.com.vipsolutions.connect.repository.GreetingRepository
 import br.com.vipsolutions.connect.repository.UraRepository
 import br.com.vipsolutions.connect.util.*
 import br.com.vipsolutions.connect.websocket.SessionCentral
-import br.com.vipsolutions.connect.websocket.alertNewMessageToAgents
-import br.com.vipsolutions.connect.websocket.broadcastToAgents
-import br.com.vipsolutions.connect.websocket.contactOnAttendance
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
@@ -109,7 +106,7 @@ class MessageService(
     })
 
     private fun queryOnlineAgents(contact: Contact){
-        SessionCentral.agents[contact.company]?.forEach { agent ->
+        SessionCentral.getAllByCompanyId(contact.company)?.forEach { agent ->
             if (agent.value.categories.contains(contact.category)){
                 return
             }
@@ -120,18 +117,19 @@ class MessageService(
     }
 
     private fun deliverMessageFlow(contact: Contact, whatsChat: WhatsChat) = Mono.just(contact)
-        .map { contactOnAttendance(it, whatsChat) }
-        .map { addContactCenter(contact.company, it) }
+        .map { SessionCentral.contactOnAttendance(it, whatsChat) }
+        .map { ContactCenter.addContactCenter(contact.company, it) }
         .flatMap{verifyClientRequestToFinalize(contact, whatsChat)}
         .flatMap { updateContactLastMessage(it, whatsChat.datetime, whatsChat.messageId) }
         .publishOn(Schedulers.boundedElastic())
-        .doFinally { alertNewMessageToAgents(contact).subscribe() }
+        .doFinally { SessionCentral.alertNewMessageToAgents(contact).subscribe() }
 
     private fun verifyClientRequestToFinalize(contact: Contact, whatsChat: WhatsChat) = if (whatsChat.text == "#"){
-        println("CLIENTE ${contact.name} SOLICITOU FINALIZAR ATENDIMENTO")
+        println("CLIENTE ${contact.name} SOLICITOU FINALIZAR ATENDIMENTO") // todo: remover
+        ContactCenter.remove(contact.company, contact.id)
         wsChatHandlerService.sendQuizOrFinalizeMsg(contact)
             .publishOn(Schedulers.boundedElastic())
-            .doFinally { broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
+            .doFinally { SessionCentral.broadcastToAgents(contact, "FINALIZE_ATTENDANCE").subscribe() }
     } else Mono.just(contact)
 
     private fun genericMessage(message: String?, contact: Contact): Contact {

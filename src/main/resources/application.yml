@@ -9,7 +9,6 @@ spring:
     username: ${DB_USER:jefao}
     password: ${DB_PASS:jefao}
 
-
 logging: #HOMOLOG - DEV
   level:
     org:

@@ -4,7 +4,6 @@ import br.com.vipsolutions.connect.model.*
 import br.com.vipsolutions.connect.model.robot.Quiz
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.net.http.HttpClient
@@ -90,11 +89,12 @@ fun sendQuizAnswerToVip(contactAndQuiz: ContactAndQuiz, selectedBtn: Int){
     }
 }
 
-fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("$CONTAINER_NODE:${fileUpload.instanceId}").build()
-    .post()
-    .uri("/whats/messages/medias")
-    .header(CONTENT_TYPE, APP_JSON)
-    .body(Mono.just(fileUpload), FileUpload::class.java)
-    .retrieve()
-    .bodyToMono(Void::class.java)
+fun sendMediaMessage(fileUpload: FileUpload) = Mono.just(fileUpload).then()
+//    WebClient.builder().baseUrl("$CONTAINER_NODE:${fileUpload.instanceId}").build()
+//    .post()
+//    .uri("/whats/messages/medias")
+//    .header(CONTENT_TYPE, APP_JSON)
+//    .body(Mono.just(fileUpload), FileUpload::class.java)
+//    .retrieve()
+//    .bodyToMono(Void::class.java)
     .doFirst { println("SEND MEDIA MSG $fileUpload") }
