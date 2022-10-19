@@ -16,6 +16,10 @@ class ContactCenter {
             return contacts[id]
         }
 
+        fun listAllNewMessages() = contacts.values.flatMap { it.values }
+
+        fun removeForced(contactId: Long) = contacts.values.forEach { it.remove(contactId) }
+
         fun remove(companyId: Long, contactId: Long) {
             contacts[companyId]?.remove(contactId)
         }
