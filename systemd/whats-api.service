@@ -1,0 +1,19 @@
+[Unit]
+Description=API JAVA WHATSAPP
+After=network.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+StandardOutput=file:/var/log/whats-api.log
+#StandardOutput=null
+ExecStart=/opt/whats-api/connect-0.0.1-SNAPSHOT.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=30
+#Nice=2
+Environment=DB_USER=jefao
+Environment=DB_PASS=jefao
+
+[Install]
+WantedBy=multi-user.target
