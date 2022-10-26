@@ -96,7 +96,7 @@ class MessageController(
         }
     }
 
-    @PostMapping("/status/update")
+    @PostMapping("/status/update") // todo: NODE DEVE ENVIAR company para atualizar o status
     fun updateOutgoingMessageStatus(@RequestBody messageStatus: MessageStatus) = whatsChatRepository.findById(messageStatus.id)
         .flatMap { whatsChatRepository.save(it.apply { status = messageStatus.status; isPersistable = false }) }
         .then()
