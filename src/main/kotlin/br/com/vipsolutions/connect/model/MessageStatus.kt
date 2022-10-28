@@ -8,5 +8,6 @@ class MessageStatus(
     val remoteJid: String,
     val id: String,
     val status: Int,
+    val companyId: Long
 ) {
 }

@@ -97,9 +97,9 @@ class MessageController(
     }
 
     @PostMapping("/status/update") // todo: NODE DEVE ENVIAR company para atualizar o status
-    fun updateOutgoingMessageStatus(@RequestBody messageStatus: MessageStatus) = whatsChatRepository.findById(messageStatus.id)
-        .flatMap { whatsChatRepository.save(it.apply { status = messageStatus.status; isPersistable = false }) }
-        .then()
+    fun updateOutgoingMessageStatus(@RequestBody messageStatus: MessageStatus) = whatsChatRepository.findByMessageIdAndCompany(messageStatus.id, messageStatus.companyId)
+            .flatMap { whatsChatRepository.save(it.apply { status = messageStatus.status; isPersistable = false }) }
+            .then()
 
     @PostMapping("/responses")
     fun buttonsResponse(@RequestBody payload: String): Mono<Void> {
