@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.model.ContactDAO
+import br.com.vipsolutions.connect.model.dao.ContactDAO
 import br.com.vipsolutions.connect.service.ContactService
 import br.com.vipsolutions.connect.util.ContactCenter
 import org.springframework.http.HttpStatus
@@ -31,4 +31,16 @@ class ContactController(private val contactService: ContactService) {
 
     @DeleteMapping("/memory/new-messages/{id}")
     fun removeMessagesCount(@PathVariable id: Long) = ContactCenter.removeForced(id)
+
+    @GetMapping("/{controlNumber}")
+    fun listAll(@PathVariable controlNumber: Long) = contactService.listAll(controlNumber)
+
+    @GetMapping("/blocked/{controlNumber}")
+    fun listAllBlocked(@PathVariable controlNumber: Long) = contactService.listAllBlocked(controlNumber)
+
+    @PostMapping("/block/{id}")
+    fun block(@PathVariable id: Long) = contactService.blockUnblock(id, "block")
+
+    @PostMapping("/unblock/{id}")
+    fun unblock(@PathVariable id: Long) = contactService.blockUnblock(id, "unblock")
 }

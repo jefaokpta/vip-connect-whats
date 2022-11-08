@@ -1,14 +1,8 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.model.Group
-import br.com.vipsolutions.connect.model.GroupDAO
 import br.com.vipsolutions.connect.repository.GroupRepository
 import br.com.vipsolutions.connect.service.GroupService
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >

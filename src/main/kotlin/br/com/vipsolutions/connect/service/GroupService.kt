@@ -3,6 +3,7 @@ package br.com.vipsolutions.connect.service
 import br.com.vipsolutions.connect.client.sendMediaMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.*
+import br.com.vipsolutions.connect.model.dao.GroupDAO
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupRepository
 import org.springframework.stereotype.Service

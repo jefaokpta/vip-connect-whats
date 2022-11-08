@@ -1,4 +1,6 @@
-package br.com.vipsolutions.connect.model
+package br.com.vipsolutions.connect.model.dao
+
+import br.com.vipsolutions.connect.model.Group
 
 
 /**

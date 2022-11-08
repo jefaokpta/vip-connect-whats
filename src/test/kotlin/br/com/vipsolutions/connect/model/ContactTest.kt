@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.model
 
+import br.com.vipsolutions.connect.model.dao.ContactDAO
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

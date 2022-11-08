@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.model
+package br.com.vipsolutions.connect.model.dao
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >

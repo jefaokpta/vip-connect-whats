@@ -1,8 +1,10 @@
 package br.com.vipsolutions.connect.service
 
+import br.com.vipsolutions.connect.client.blockUnblockContact
 import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.ContactDAO
+import br.com.vipsolutions.connect.model.dao.ContactDAO
+import br.com.vipsolutions.connect.model.ContactLite
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
 import org.springframework.http.HttpStatus
@@ -36,10 +38,25 @@ class ContactService(
                 .subscribe()
             println("Contact ${contact.name} created")
         }
-
         .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
 
     private fun addProfilePicture(contact: Contact) = Mono.justOrEmpty(getProfilePicture(contact.instanceId, contact.whatsapp).picture)
         .flatMap { contactRepository.save(contact.apply { imgUrl = it }) }
+
+    fun listAll(controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
+        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada")))
+        .flatMapMany { contactRepository.findAllByCompanyOrderByNameAsc(it.id) }
+        .map(::ContactLite)
+
+    fun listAllBlocked(controlNumber: Long) = companyRepository.findByControlNumber(controlNumber)
+        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Empresa não encontrada")))
+        .flatMapMany { contactRepository.findAllByCompanyAndIsBlockedOrderByNameAsc(it.id) }
+        .map(::ContactLite)
+
+    fun blockUnblock(id: Long, action: String)  = contactRepository.findById(id)
+        .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Contato não encontrado")))
+        .flatMap { blockUnblockContact(it, action) }
+        .flatMap { contactRepository.save(it.copy(isBlocked = action == "block")) }
+        .then()
 
 }

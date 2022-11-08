@@ -16,4 +16,6 @@ interface ContactRepository: ReactiveCrudRepository<Contact, Long> {
     fun findAllByCompanyOrderByLastMessageTimeDesc(company: Long): Flux<Contact>
 
     fun findAllByCompanyOrderByNameAsc(company: Long): Flux<Contact>
+
+    fun findAllByCompanyAndIsBlockedOrderByNameAsc(company: Long, blocked: Boolean = true): Flux<Contact>
 }

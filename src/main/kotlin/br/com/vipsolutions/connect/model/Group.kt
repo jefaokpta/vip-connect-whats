@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.model
 
+import br.com.vipsolutions.connect.model.dao.GroupDAO
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.annotation.Transient

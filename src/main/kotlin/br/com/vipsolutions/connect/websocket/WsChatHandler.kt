@@ -4,7 +4,7 @@ import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.ContactLite
 import br.com.vipsolutions.connect.model.Group
-import br.com.vipsolutions.connect.model.GroupDAO
+import br.com.vipsolutions.connect.model.dao.GroupDAO
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository

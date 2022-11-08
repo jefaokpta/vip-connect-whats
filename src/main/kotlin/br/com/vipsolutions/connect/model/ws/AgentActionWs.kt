@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.model.ws
 
 import br.com.vipsolutions.connect.model.*
+import br.com.vipsolutions.connect.model.dao.GroupDAO
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >

@@ -1,5 +1,6 @@
 package br.com.vipsolutions.connect.model
 
+import br.com.vipsolutions.connect.model.dao.ContactDAO
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
@@ -25,6 +26,7 @@ data class Contact(
     var protocol: Long? = null,
     var fromAgent: Boolean = false,
     var isNewProtocol: Boolean = false,
+    val isBlocked: Boolean = false,
 ) {
     @Transient
     var busy = false

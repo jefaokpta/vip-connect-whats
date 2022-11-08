@@ -98,3 +98,23 @@ fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("$CON
     .retrieve()
     .bodyToMono(Void::class.java)
     .doFirst { println("SEND MEDIA MSG $fileUpload") }
+
+fun blockUnblockContact(contact: Contact, action: String): Mono<Contact> {
+    val json = JsonObject()
+    json.addProperty("remoteJid", contact.whatsapp)
+    json.addProperty("action", action)
+    val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/contacts/block"))
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+        .header(CONTENT_TYPE, APP_JSON)
+        .build()
+    try {
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
+            println("Enviado $json RETORNO ${response.statusCode()}")
+            return Mono.just(contact)
+        }
+    }catch (ex: Exception){
+        println("DEU RUIM AO ENVIAR BLOCK/UNBLOCK PRO NODE INSTANCE_ID ${contact.instanceId} - ${ex.message}")
+        return Mono.error(ex)
+    }
+}
+
