@@ -38,9 +38,9 @@ class ContactController(private val contactService: ContactService) {
     @GetMapping("/blocked/{controlNumber}")
     fun listAllBlocked(@PathVariable controlNumber: Long) = contactService.listAllBlocked(controlNumber)
 
-    @PostMapping("/block/{id}")
+    @PostMapping("/block/{id}") @CrossOrigin
     fun block(@PathVariable id: Long) = contactService.blockUnblock(id, "block")
 
-    @PostMapping("/unblock/{id}")
+    @PostMapping("/unblock/{id}") @CrossOrigin
     fun unblock(@PathVariable id: Long) = contactService.blockUnblock(id, "unblock")
 }
