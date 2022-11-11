@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.model
 
-import br.com.vipsolutions.connect.model.dao.ContactDAO
+import br.com.vipsolutions.connect.model.dto.ContactDTO
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ internal class ContactTest{
 
         @Test
         fun `Contact lastMessageTime nao pode ser NULL`(){
-            val contact = Contact(ContactDAO("Jefferson", "5511987654321", 100200))
+            val contact = Contact(ContactDTO("Jefferson", "5511987654321", 100200))
             assertNotNull(contact.lastMessageTime)
         }
 }

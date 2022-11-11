@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.model
 
-import br.com.vipsolutions.connect.model.dao.ContactDAO
+import br.com.vipsolutions.connect.model.dto.ContactDTO
 import org.springframework.data.annotation.Id
 import org.springframework.data.annotation.Transient
 import org.springframework.data.relational.core.mapping.Table
@@ -37,12 +37,12 @@ data class Contact(
     @Transient
     var subUra: String? = null
 
-    constructor(contactDAO: ContactDAO) : this(
+    constructor(contactDTO: ContactDTO) : this(
         id = 0,
-        name = contactDAO.name,
-        whatsapp = contactDAO.whatsapp,
-        company = contactDAO.controlNumber,
-        instanceId = contactDAO.instanceId,
+        name = contactDTO.name,
+        whatsapp = contactDTO.whatsapp,
+        company = contactDTO.controlNumber,
+        instanceId = contactDTO.instanceId,
         lastCategory = 0,
         imgUrl = null,
         lastMessageId = null,

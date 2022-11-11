@@ -1,4 +1,4 @@
-package br.com.vipsolutions.connect.model.dao
+package br.com.vipsolutions.connect.model.dto
 
 import br.com.vipsolutions.connect.model.Group
 
@@ -7,7 +7,7 @@ import br.com.vipsolutions.connect.model.Group
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 14/06/22
  */
-class GroupDAO(
+class GroupDTO(
     val id: Long,
     val name: String,
     val controlNumber: Long,

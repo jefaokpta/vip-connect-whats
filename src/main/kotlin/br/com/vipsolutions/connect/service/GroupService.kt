@@ -3,7 +3,7 @@ package br.com.vipsolutions.connect.service
 import br.com.vipsolutions.connect.client.sendMediaMessage
 import br.com.vipsolutions.connect.client.sendTextMessage
 import br.com.vipsolutions.connect.model.*
-import br.com.vipsolutions.connect.model.dao.GroupDAO
+import br.com.vipsolutions.connect.model.dto.GroupDTO
 import br.com.vipsolutions.connect.repository.ContactRepository
 import br.com.vipsolutions.connect.repository.GroupRepository
 import org.springframework.stereotype.Service
@@ -21,13 +21,13 @@ class GroupService(
 ) {
 
     fun getGroupWithContactList(id: Long) = groupRepository.findById(id)
-        .map(::GroupDAO)
+        .map(::GroupDTO)
 
-    fun newGroup(groupDAO: GroupDAO) = groupRepository.save(Group(groupDAO))
-        .map(::GroupDAO)
+    fun newGroup(groupDTO: GroupDTO) = groupRepository.save(Group(groupDTO))
+        .map(::GroupDTO)
 
-    fun updateGroup(groupDAO: GroupDAO) = groupRepository.findById(groupDAO.id)
-        .flatMap{groupRepository.save(Group(groupDAO))}
+    fun updateGroup(groupDTO: GroupDTO) = groupRepository.findById(groupDTO.id)
+        .flatMap{groupRepository.save(Group(groupDTO))}
 
     fun deleteGroup(id: Long) = groupRepository.findById(id)
         .flatMap (groupRepository::delete)

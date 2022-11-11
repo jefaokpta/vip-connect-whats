@@ -2,9 +2,9 @@ package br.com.vipsolutions.connect.websocket
 
 import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.client.sendTextMessage
-import br.com.vipsolutions.connect.model.ContactLite
+import br.com.vipsolutions.connect.model.dto.ContactLite
 import br.com.vipsolutions.connect.model.Group
-import br.com.vipsolutions.connect.model.dao.GroupDAO
+import br.com.vipsolutions.connect.model.dto.GroupDTO
 import br.com.vipsolutions.connect.model.ws.AgentActionWs
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
@@ -192,12 +192,12 @@ class WsChatHandler(
             "GROUP_WITH_CONTACT_LIST" -> {
                 val groupReceived = agentActionWs.group?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = MISSING_GROUP_OBJECT })))
                 groupService.getGroupWithContactList(groupReceived.id)
-                    .switchIfEmpty(Mono.just(GroupDAO(0L, "", 0)))
+                    .switchIfEmpty(Mono.just(GroupDTO(0L, "", 0)))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply {if(it.id == 0L) errorMessage = GROUP_NOT_FOUND else group = it})) }
             }
             "LIST_ALL_GROUPS" -> {
                 groupService.getAllGroupsByControlNumber(agentActionWs.controlNumber)
-                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { groups = it.map(::GroupDAO) })) }
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { groups = it.map(::GroupDTO) })) }
             }
             "SEND_GROUP_MESSAGE" -> {
                 val groupMessage = agentActionWs.groupMessage?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO GROUP MESSAGE" })))

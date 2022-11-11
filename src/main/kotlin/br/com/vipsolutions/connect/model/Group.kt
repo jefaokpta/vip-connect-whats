@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.model
 
-import br.com.vipsolutions.connect.model.dao.GroupDAO
+import br.com.vipsolutions.connect.model.dto.GroupDTO
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.annotation.Transient
@@ -21,11 +21,11 @@ data class Group(
     @Transient
     var contacts: List<Contact> = listOf()
 
-    constructor(groupDAO: GroupDAO) : this(
-        groupDAO.id,
-        groupDAO.name,
-        groupDAO.controlNumber,
-        groupDAO.contactsId.joinToString(",")
+    constructor(groupDTO: GroupDTO) : this(
+        groupDTO.id,
+        groupDTO.name,
+        groupDTO.controlNumber,
+        groupDTO.contactsId.joinToString(",")
     ){
     }
 }

@@ -1,6 +1,6 @@
 package br.com.vipsolutions.connect.controller
 
-import br.com.vipsolutions.connect.model.dao.ContactDAO
+import br.com.vipsolutions.connect.model.dto.ContactDTO
 import br.com.vipsolutions.connect.service.ContactService
 import br.com.vipsolutions.connect.util.ContactCenter
 import org.springframework.http.HttpStatus
@@ -23,7 +23,7 @@ class ContactController(private val contactService: ContactService) {
 
     @PostMapping @CrossOrigin
     @ResponseStatus(HttpStatus.CREATED)
-    fun save(@RequestBody contactDAO: ContactDAO) = contactService.createContact(contactDAO)
+    fun save(@RequestBody contactDTO: ContactDTO) = contactService.createContact(contactDTO)
         .switchIfEmpty( Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "EMPRESA NÃO ENCONTRADA.")))
 
     @GetMapping("/memory/new-messages")

@@ -3,8 +3,8 @@ package br.com.vipsolutions.connect.service
 import br.com.vipsolutions.connect.client.blockUnblockContact
 import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.model.Contact
-import br.com.vipsolutions.connect.model.dao.ContactDAO
-import br.com.vipsolutions.connect.model.ContactLite
+import br.com.vipsolutions.connect.model.dto.ContactDTO
+import br.com.vipsolutions.connect.model.dto.ContactLite
 import br.com.vipsolutions.connect.repository.CompanyRepository
 import br.com.vipsolutions.connect.repository.ContactRepository
 import org.springframework.http.HttpStatus
@@ -23,9 +23,9 @@ class ContactService(
     private val companyRepository: CompanyRepository
 ) {
 
-    fun createContact(contactDAO: ContactDAO) = companyRepository.findByControlNumber(contactDAO.controlNumber)
+    fun createContact(contactDTO: ContactDTO) = companyRepository.findByControlNumber(contactDTO.controlNumber)
         .flatMap { company ->
-            contactRepository.save(Contact(contactDAO.apply {
+            contactRepository.save(Contact(contactDTO.apply {
                 whatsapp = whatsapp.plus("@s.whatsapp.net")
                 controlNumber = company.id
                 instanceId = company.instance
