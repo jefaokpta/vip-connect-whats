@@ -128,6 +128,8 @@ class WsChatHandler(
 
             "LIST_CONTACTS_LAST_CATEGORY" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .flatMap{ wsChatHandlerService.contactsFilteredByLastCategory(it, agentActionWs.agent) }
+                .map(ContactCenter::contactsHaveNewMessages)
+                .map { SessionCentral.verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "LIST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)

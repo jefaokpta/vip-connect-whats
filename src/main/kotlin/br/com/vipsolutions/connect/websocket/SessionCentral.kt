@@ -22,9 +22,7 @@ class SessionCentral {
             return agents[companyId]
         }
 
-        fun getAll(): Map<Long, Map<Int, AgentSession>> {
-            return agents
-        }
+        fun getAll() = agents.values.map{it.keys}.flatten() // todo: falta comprovar q lista de todos os agentes
 
         fun verifyLockedContacts(contactsAndId: ContactsAndId): List<Contact> {
             val contactsBusy = mutableMapOf<Long, Int>()

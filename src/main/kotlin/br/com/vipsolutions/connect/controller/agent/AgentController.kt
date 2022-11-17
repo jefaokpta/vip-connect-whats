@@ -24,6 +24,5 @@ class AgentController(private val companyRepository: CompanyRepository) {
 
     @GetMapping
     fun listAllMemoryAgentSessions() = Mono.justOrEmpty(SessionCentral.getAll())
-        .map { it.keys.toList() }
         .switchIfEmpty(Mono.just(listOf()))
 }
