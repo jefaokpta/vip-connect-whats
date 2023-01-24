@@ -1,6 +1,7 @@
 package br.com.vipsolutions.connect.service
 
 import br.com.vipsolutions.connect.client.blockUnblockContact
+import br.com.vipsolutions.connect.client.checkIfContactIsOnWhatsapp
 import br.com.vipsolutions.connect.client.getProfilePicture
 import br.com.vipsolutions.connect.model.Contact
 import br.com.vipsolutions.connect.model.dto.ContactDTO
@@ -24,6 +25,7 @@ class ContactService(
 ) {
 
     fun createContact(contactDTO: ContactDTO) = companyRepository.findByControlNumber(contactDTO.controlNumber)
+        .flatMap { checkIfContactIsOnWhatsapp(contactDTO, it) }
         .flatMap { company ->
             contactRepository.save(Contact(contactDTO.apply {
                 whatsapp = whatsapp.plus("@s.whatsapp.net")
@@ -38,7 +40,8 @@ class ContactService(
                 .subscribe()
             println("Contact ${contact.name} created")
         }
-        .onErrorResume{error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message))}
+        .onErrorResume{ error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
+
 
     private fun addProfilePicture(contact: Contact) = Mono.justOrEmpty(getProfilePicture(contact.instanceId, contact.whatsapp).picture)
         .flatMap { contactRepository.save(contact.apply { imgUrl = it }) }
@@ -57,6 +60,7 @@ class ContactService(
         .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Contato não encontrado")))
         .flatMap { blockUnblockContact(it, action) }
         .flatMap { contactRepository.save(it.copy(isBlocked = action == "block")) }
+        .onErrorResume { error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
         .then()
 
 }

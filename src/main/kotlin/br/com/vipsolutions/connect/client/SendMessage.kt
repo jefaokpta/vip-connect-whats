@@ -1,11 +1,13 @@
 package br.com.vipsolutions.connect.client
 
 import br.com.vipsolutions.connect.model.*
+import br.com.vipsolutions.connect.model.dto.ContactDTO
 import br.com.vipsolutions.connect.model.robot.Quiz
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -99,22 +101,29 @@ fun sendMediaMessage(fileUpload: FileUpload) = WebClient.builder().baseUrl("$CON
     .bodyToMono(Void::class.java)
     .doFirst { println("SEND MEDIA MSG $fileUpload") }
 
+fun checkIfContactIsOnWhatsapp(contactDTO: ContactDTO, company: Company) = WebClient.builder().baseUrl("$CONTAINER_NODE:${company.instance}").build()
+    .post()
+    .uri("/whats/contacts/is-on-whats")
+    .header(CONTENT_TYPE, APP_JSON)
+    .body(Mono.just(JsonObject().apply { addProperty("telNumber", contactDTO.whatsapp) }.toString()), String::class.java)
+    .retrieve()
+    .bodyToMono(Boolean::class.java)
+    .map { if (it) return@map company else throw Exception("Contato não existe no Whatsapp") }
+    .doFirst { println("CHECK IF CONTACT IS ON WHATSAPP ${contactDTO.whatsapp}") }
+
 fun blockUnblockContact(contact: Contact, action: String): Mono<Contact> {
     val json = JsonObject()
     json.addProperty("remoteJid", contact.whatsapp)
     json.addProperty("action", action)
-    val request = HttpRequest.newBuilder(URI("$CONTAINER_NODE:${contact.instanceId}/whats/contacts/block"))
-        .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+
+    return WebClient.builder().baseUrl("$CONTAINER_NODE:${contact.instanceId}").build()
+        .post()
+        .uri("/whats/contacts/block")
         .header(CONTENT_TYPE, APP_JSON)
-        .build()
-    try {
-        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).let { response ->
-            println("Enviado $json RETORNO ${response.statusCode()}")
-            return Mono.just(contact)
-        }
-    }catch (ex: Exception){
-        println("DEU RUIM AO ENVIAR BLOCK/UNBLOCK PRO NODE INSTANCE_ID ${contact.instanceId} - ${ex.message}")
-        return Mono.error(ex)
-    }
+        .body(Mono.just(json.toString()), String::class.java)
+        .retrieve()
+        .bodyToMono(Contact::class.java)
+        .switchIfEmpty { Mono.just(contact) }
+        .doFirst { println("BLOCK/UNBLOCK CONTACT $contact") }
 }
 

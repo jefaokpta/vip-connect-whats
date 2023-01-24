@@ -1,7 +1,7 @@
-## ATENCAO PRO AMBIENTE HOMOLOG: PORTA BANCO 3307 E PORTA WEB 9090! E DESATIVA LOGGING DE SQL
 server:
   error:
     include-stacktrace: on_param # ?trace=true
+    include-message: always
 
 spring:
   r2dbc:
@@ -9,8 +9,9 @@ spring:
     username: ${DB_USER:jefao}
     password: ${DB_PASS:jefao}
 
-#logging: #HOMOLOG - DEV
-#  level:
-#    org:
-#      springframework:
-#          r2dbc: DEBUG
+## ATENCAO DESATIVA LOGGING DE SQL
+logging:
+  level:
+    org:
+      springframework:
+          r2dbc: DEBUG
