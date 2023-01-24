@@ -9,7 +9,7 @@ spring:
     username: ${DB_USER:jefao}
     password: ${DB_PASS:jefao}
 
-## ATENCAO DESATIVA LOGGING DE SQL
+## ATENCAO DESATIVA LOG DE SQL
 logging:
   level:
     org:
