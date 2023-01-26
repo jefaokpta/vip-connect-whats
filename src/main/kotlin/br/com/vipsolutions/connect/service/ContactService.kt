@@ -24,24 +24,28 @@ class ContactService(
     private val companyRepository: CompanyRepository
 ) {
 
-    fun createContact(contactDTO: ContactDTO) = companyRepository.findByControlNumber(contactDTO.controlNumber)
-        .flatMap { checkIfContactIsOnWhatsapp(contactDTO, it) }
-        .flatMap { company ->
-            contactRepository.save(Contact(contactDTO.apply {
-                whatsapp = whatsapp.plus("@s.whatsapp.net")
-                controlNumber = company.id
-                instanceId = company.instance
-            }))
-        }
-        .doOnNext {contact ->
-            Mono.just("CRIANDO EXECUCAO TARDIA")
-                .flatMap { addProfilePicture(contact) }
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe()
-            println("Contact ${contact.name} created")
-        }
-        .onErrorResume{ error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
+    fun createContact(contactDTO: ContactDTO): Mono<Contact> {
+        val contactDTOCleaned = contactDTO.copy(whatsapp = cleanWhatsappNumber(contactDTO.whatsapp))
+        return companyRepository.findByControlNumber(contactDTOCleaned.controlNumber)
+            .flatMap { checkIfContactIsOnWhatsapp(contactDTOCleaned, it) }
+            .flatMap { company ->
+                contactRepository.save(Contact(contactDTOCleaned.apply {
+                    whatsapp = whatsapp.plus("@s.whatsapp.net")
+                    controlNumber = company.id
+                    instanceId = company.instance
+                }))
+            }
+            .doOnNext { contact ->
+                Mono.just("CRIANDO EXECUCAO TARDIA")
+                    .flatMap { addProfilePicture(contact) }
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe()
+                println("Contact ${contact.name} created")
+            }
+            .onErrorResume { error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
+    }
 
+    private fun cleanWhatsappNumber(whatsapp: String) = whatsapp.replace(" ", "").replace("-", "")
 
     private fun addProfilePicture(contact: Contact) = Mono.justOrEmpty(getProfilePicture(contact.instanceId, contact.whatsapp).picture)
         .flatMap { contactRepository.save(contact.apply { imgUrl = it }) }

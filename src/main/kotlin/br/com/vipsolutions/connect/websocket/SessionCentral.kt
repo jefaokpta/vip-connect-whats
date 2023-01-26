@@ -22,7 +22,7 @@ class SessionCentral {
             return agents[companyId]
         }
 
-        fun getAll() = agents.values.map{it.keys}.flatten() // todo: falta comprovar q lista de todos os agentes
+        fun getAll() = agents.values.map{it.keys}.flatten()
 
         fun verifyLockedContacts(contactsAndId: ContactsAndId): List<Contact> {
             val contactsBusy = mutableMapOf<Long, Int>()
@@ -92,7 +92,6 @@ class SessionCentral {
         }
 
         fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
-            //actionWs.category.forEach { println(it) }
             if (agents.contains(company.id)) {
                 agents[company.id]!![actionWs.agent] = AgentSession(webSocketSession, null, actionWs.categories)
             } else {

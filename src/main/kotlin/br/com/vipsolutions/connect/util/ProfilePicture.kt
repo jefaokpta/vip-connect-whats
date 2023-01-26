@@ -17,7 +17,6 @@ class ProfilePicture(private val contactRepository: ContactRepository) {
 
     private fun updatePP(contact: Contact): Contact {
         println("TENTANDO ATUALIZAR FOTO DE ${contact.whatsapp} ${LocalDateTime.now()}")
-        // todo: ignorar se contato tiver espaco ou traco no atributo whatsapp (erro de cadastro)
         contact.imgUrl = getProfilePicture(contact.instanceId, contact.whatsapp).picture?: return contact
         println("CONSEGUI ${contact.whatsapp}")
         return contact
