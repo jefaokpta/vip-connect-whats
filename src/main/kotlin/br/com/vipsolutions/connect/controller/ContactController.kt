@@ -32,6 +32,9 @@ class ContactController(private val contactService: ContactService) {
     @DeleteMapping("/memory/new-messages/{id}")
     fun removeMessagesCount(@PathVariable id: Long) = ContactCenter.removeForced(id)
 
+    @DeleteMapping("/{id}") @CrossOrigin
+    fun delete(@PathVariable id: Long) = contactService.delete(id)
+
     @GetMapping("/{controlNumber}")
     fun listAll(@PathVariable controlNumber: Long) = contactService.listAll(controlNumber)
 

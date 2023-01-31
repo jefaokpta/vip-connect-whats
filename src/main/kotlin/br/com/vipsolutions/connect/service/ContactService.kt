@@ -67,4 +67,7 @@ class ContactService(
         .onErrorResume { error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
         .then()
 
+    fun delete(id: Long) = contactRepository.deleteById(id)
+        .onErrorResume { error -> Mono.error(ResponseStatusException(HttpStatus.BAD_REQUEST, error.message)) }
+
 }
