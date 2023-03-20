@@ -54,7 +54,7 @@ class MessageService(
                     return uraRepository.findByCompanyAndVipUraId(contactAccerted.company, contactAccerted.subUra!!.split("-")[1].toLong())
                         .flatMap { uraOptionService.fillOptions(it) }
                         .doOnNext { AnsweringUraCenter.addUraAnswer(contactAccerted, it) }
-                        .flatMap { buildUraMessage(it, contactAccerted) }
+                        .flatMap { buildUraMessage(it, contactAccerted, whatsChat) }
                 }
                 AnsweringUraCenter.removeUraAnswer(contactAccerted)
                 genericMessage(uraAnswer.ura.validOption, contactAccerted)
@@ -82,7 +82,7 @@ class MessageService(
         return uraRepository.findTop1ByCompanyAndActive(contact.company)
             .flatMap { uraOptionService.fillOptions(it) }
             .doOnNext { AnsweringUraCenter.addUraAnswer(contact, it) }
-            .flatMap { buildUraMessage(it, contact) }
+            .flatMap { buildUraMessage(it, contact, whatsChat) }
             .switchIfEmpty (categorizedContact(contact.apply { category = 0; lastCategory = 0 }, whatsChat))
     }
 
@@ -148,8 +148,14 @@ class MessageService(
         return Mono.empty()
     }
 
-        private fun buildUraMessage(ura: Ura, contact: Contact): Mono<Contact> { //todo: caso nao tenha opcoes, categorizar como 0
+    private fun buildUraMessage(ura: Ura, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         val stringBuilder = StringBuilder(ura.initialMessage)
+        if (ura.options.isEmpty()){
+            contact.category = 0
+            contact.lastCategory = 0
+            sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+            return categorizedContact(contact, whatsChat)
+        }
         ura.options.forEach { stringBuilder.append("\n ${it.option} - ${it.department}") }
         sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
         return Mono.just(contact)
