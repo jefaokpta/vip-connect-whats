@@ -148,7 +148,7 @@ class MessageService(
         return Mono.empty()
     }
 
-    private fun buildUraMessage(ura: Ura, contact: Contact): Mono<Contact> {
+        private fun buildUraMessage(ura: Ura, contact: Contact): Mono<Contact> { //todo: caso nao tenha opcoes, categorizar como 0
         val stringBuilder = StringBuilder(ura.initialMessage)
         ura.options.forEach { stringBuilder.append("\n ${it.option} - ${it.department}") }
         sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
