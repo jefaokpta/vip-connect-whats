@@ -159,6 +159,7 @@ class MessageService(
     }
 
     private fun uraWithoutOptions(contact: Contact, stringBuilder: StringBuilder, whatsChat: WhatsChat): Mono<Contact> {
+        AnsweringUraCenter.removeUraAnswer(contact)
         contact.category = 0
         contact.lastCategory = 0
         sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
