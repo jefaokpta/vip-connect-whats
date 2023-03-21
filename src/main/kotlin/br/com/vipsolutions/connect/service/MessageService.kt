@@ -151,14 +151,18 @@ class MessageService(
     private fun buildUraMessage(ura: Ura, contact: Contact, whatsChat: WhatsChat): Mono<Contact> {
         val stringBuilder = StringBuilder(ura.initialMessage)
         if (ura.options.isEmpty()){
-            contact.category = 0
-            contact.lastCategory = 0
-            sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
-            return categorizedContact(contact, whatsChat)
+            return uraWithoutOptions(contact, stringBuilder, whatsChat)
         }
         ura.options.forEach { stringBuilder.append("\n ${it.option} - ${it.department}") }
         sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
         return Mono.just(contact)
+    }
+
+    private fun uraWithoutOptions(contact: Contact, stringBuilder: StringBuilder, whatsChat: WhatsChat): Mono<Contact> {
+        contact.category = 0
+        contact.lastCategory = 0
+        sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+        return categorizedContact(contact, whatsChat)
     }
 
     private fun buildUraMessageNoInitialMessage(ura: Ura, contact: Contact): Mono<Contact> {
