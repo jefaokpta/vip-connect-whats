@@ -17,7 +17,7 @@ import java.net.http.HttpResponse
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 2021-04-26
  */
-
+ // todo: verificar memory leak no cache de new messages
 private const val CONTENT_TYPE = "Content-Type"
 private const val APP_JSON = "application/json"
 private const val CONTAINER_NODE = "http://localhost"
