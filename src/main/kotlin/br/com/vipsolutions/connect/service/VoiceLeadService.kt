@@ -29,6 +29,11 @@ class VoiceLeadService(
             .filter { it.isDigit() }
             .plus("@s.whatsapp.net")
         val name = leads["leads"][0]["name"].asText()
+        var text = "Olá! $name. Agradecemos pelo seu contato.\n" +
+                "Por favor, responda esta mensagem para que possamos conversar e ajudá-lo(a) da melhor maneira possível."
+        if (leads["leads"][0]["tags"][0].asText().isNotEmpty()) {
+            text = leads["leads"][0]["tags"][0].asText()
+        }
         println("INFO: VOICE LEAD PHONE $phone NAME $name")
         return companyRepository.findByControlNumber(controlNumber)
             .flatMap { company ->
@@ -42,6 +47,6 @@ class VoiceLeadService(
                         lastCategory = 0
                     ))
                 )
-            }.map { sendTextMessage(it.whatsapp, "oooopa", it.instanceId) }
+            }.map { sendTextMessage(it.whatsapp, text, it.instanceId) }
     }
 }
