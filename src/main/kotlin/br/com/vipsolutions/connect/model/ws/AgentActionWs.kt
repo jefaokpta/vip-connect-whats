@@ -23,5 +23,6 @@ class AgentActionWs(
     val groupMessage: GroupMessage? = null,
     val categories: MutableList<Long> = mutableListOf(),
     val categoryName: String? = null,
+    val searchText: String? = null,
 ) {
 }

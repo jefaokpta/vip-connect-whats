@@ -207,6 +207,13 @@ class WsChatHandler(
                     .switchIfEmpty(Mono.just(Group(0, "", 0)))
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { if(it.id == 0L) errorMessage = GROUP_NOT_FOUND })) }
             }
+            "SEARCH_CONTACT" -> {
+                val searchText = agentActionWs.searchText?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO TEXTO DA BUSCA" })))
+                contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(agentActionWs.controlNumber)
+                    .filter { it.name?.contains(searchText, true) ?: false || it.whatsapp.contains(searchText) }
+                    .collectList()
+                    .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
+            }
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
         }
     }
