@@ -13,7 +13,7 @@ interface ContactRepository: ReactiveCrudRepository<Contact, Long> {
 
     fun findByWhatsappAndCompany(whatsapp: String, company: Long): Mono<Contact>
 
-    fun findAllByCompanyOrderByLastMessageTimeDesc(company: Long): Flux<Contact>
+    fun findTop300ByCompanyOrderByLastMessageTimeDesc(company: Long): Flux<Contact>
 
     fun findAllByCompanyOrderByNameAsc(company: Long): Flux<Contact>
 

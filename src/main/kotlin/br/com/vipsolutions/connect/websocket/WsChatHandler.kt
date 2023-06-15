@@ -46,7 +46,7 @@ class WsChatHandler(
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .map { SessionCentral.addAgentSession(it, agentActionWs, webSocketSession)  }
-                .map { company -> contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id) }
+                .map { company -> contactRepository.findTop300ByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
                 .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
 //                .map { contacts -> contacts.filter { !it.fromAgent }} // DESATIVADO PRA VER ONDE QUEBRA
@@ -133,7 +133,7 @@ class WsChatHandler(
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
 
             "LIST_ALL_CONTACTS" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
-                .map { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
+                .map { contactRepository.findTop300ByCompanyOrderByLastMessageTimeDesc(it.id) }
                 .flatMap { it.collectList() }
                 .map(ContactCenter::contactsHaveNewMessages)
                 .map { SessionCentral.verifyLockedContacts(it) }

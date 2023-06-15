@@ -52,7 +52,7 @@ class WsChatHandlerService(
 
     fun contactsFilteredByLastCategory(company: Company, agent: Int): Mono<MutableList<Contact>> {
         val agentCategories = SessionCentral.getAllByCompanyId(company.id)?.get(agent)?.categories ?: return Mono.empty()
-        return contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(company.id)
+        return contactRepository.findTop300ByCompanyOrderByLastMessageTimeDesc(company.id)
             .filter { agentCategories.contains(it.lastCategory) }
             .collectList()
     }
