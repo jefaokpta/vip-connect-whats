@@ -211,7 +211,7 @@ class WsChatHandler(
                 val searchText = agentActionWs.searchText?: return Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply { errorMessage = "FALTANDO TEXTO DA BUSCA" })))
                 companyRepository.findByControlNumber(agentActionWs.controlNumber)
                     .flatMapMany { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
-                    .filter { it.name?.contains(searchText, true) ?: false || it.whatsapp.contains(searchText) }
+                    .filter { it.name?.contains(searchText, true) ?: false || it.whatsapp.split("@")[0].contains(searchText) }
                     .collectList()
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
             }
