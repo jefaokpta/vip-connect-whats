@@ -169,7 +169,7 @@ class WsChatHandler(
                     .doFinally {
                         SessionCentral.unlockContact(contact, agentActionWs.agent).subscribe()
                         SessionCentral.alertNewMessageToAgents(contact).subscribe()
-                        sendTextMessage(contact.whatsapp, "Você está no Departamento: ${agentActionWs.categoryName}", contact.instanceId)
+                        sendTextMessage(contact.whatsapp, "Você está sendo transferido para: ${agentActionWs.categoryName}", contact.instanceId)
                     }
             }
             "CREATE_GROUP" -> {
