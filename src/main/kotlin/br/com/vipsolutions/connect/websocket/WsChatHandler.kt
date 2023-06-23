@@ -39,6 +39,8 @@ class WsChatHandler(
         .flatMap { handleAgentActions(it, session) }
         .doFinally { SessionCentral.removeAgentSession(session)}
     )
+    //todo: separar conversas por departamento
+    //todo: receber mensagens citadas
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
         val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
@@ -75,7 +77,10 @@ class WsChatHandler(
                 }
 
             "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
-                .map { whatsChatRepository.findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company) }
+                .map {
+                    if(it.category == null) whatsChatRepository.findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company)
+                    else whatsChatRepository.findTop500ByRemoteJidAndCompanyAndCategoryOrderByDatetimeDesc(it.whatsapp, it.company, it.category!!)
+                }
                 .orElse(Flux.empty())
                 .collectList()
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
