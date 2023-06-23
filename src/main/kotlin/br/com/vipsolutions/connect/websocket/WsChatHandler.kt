@@ -213,6 +213,8 @@ class WsChatHandler(
                     .flatMapMany { contactRepository.findAllByCompanyOrderByLastMessageTimeDesc(it.id) }
                     .filter { it.name?.contains(searchText, true) ?: false || it.whatsapp.split("@")[0].contains(searchText) }
                     .collectList()
+                    .map(ContactCenter::contactsHaveNewMessages)
+                    .map { SessionCentral.verifyLockedContacts(it) }
                     .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
             }
             else -> Mono.just(webSocketSession.textMessage(objectToJson(agentActionWs.apply {action = "ERROR"; errorMessage = "Açao Desconhecida." })))
