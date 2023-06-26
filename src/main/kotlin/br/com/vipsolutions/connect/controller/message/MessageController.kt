@@ -71,14 +71,18 @@ class MessageController(
             jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage")["text"]?:
             jsonObject["error"]
             whatsChat.text = textJson.asString
-            whatsChat.quotedId = jsonObject.getAsJsonObject("message")
-                .getAsJsonObject("extendedTextMessage")
-                .getAsJsonObject("contextInfo")["stanzaId"].asString
-            whatsChat.quotedMessage = jsonObject.getAsJsonObject("message")
-                .getAsJsonObject("extendedTextMessage")
-                .getAsJsonObject("contextInfo")["quotedMessage"].asString.substring(0, 245)
+            if (jsonObject.getAsJsonObject("message").has("extendedTextMessage")){
+                jsonObject.getAsJsonObject("message")
+                    .getAsJsonObject("extendedTextMessage")
+                    .getAsJsonObject("contextInfo").let { quote ->
+                        whatsChat.quotedId = quote["stanzaId"].asString ?: null
+                        whatsChat.quotedMessage = quote.getAsJsonObject("quotedMessage")["conversation"].asString ?: null
+                        if (whatsChat.quotedMessage != null && whatsChat.quotedMessage!!.length > 245){
+                            whatsChat.quotedMessage = whatsChat.quotedMessage!!.substring(0, 245)
+                        }
+                    }
+            }
         }
-
 
         return if(fromMe){
             contactRepository.findByWhatsappAndCompany(whatsChat.remoteJid, company)
