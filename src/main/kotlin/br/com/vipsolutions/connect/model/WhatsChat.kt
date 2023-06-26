@@ -26,7 +26,8 @@ data class WhatsChat(
     var mediaCaption: String? = null,
     var mediaFileLength: Long? = null,
     var mediaPageCount: Int? = null,
-    var protocol: Long? = null
+    var protocol: Long? = null,
+    var category: Long? = null,
 ): Persistable<String> {
     @Transient
     var isPersistable: Boolean = true

@@ -76,12 +76,16 @@ class MessageController(
 
         return if(fromMe){
             contactRepository.findByWhatsappAndCompany(whatsChat.remoteJid, company)
-                .map { SessionCentral.contactOnAttendance(it, whatsChat.apply { protocol = it.protocol })}
+                .map { SessionCentral.contactOnAttendance(it, whatsChat.apply {
+                    protocol = it.protocol
+                    category = it.category
+                })}
                 .flatMap { messageService.updateContactLastMessage(it, datetime, messageId) }
                 .flatMap { whatsChatRepository.findById(messageId) }
                 .flatMap { dbWhatsChat ->
                     dbWhatsChat.status = whatsChat.status
                     dbWhatsChat.protocol = whatsChat.protocol
+                    dbWhatsChat.category = whatsChat.category
                     dbWhatsChat.isPersistable = false
                     whatsChatRepository.save(dbWhatsChat)
                 }
@@ -90,7 +94,10 @@ class MessageController(
         else {
             contactRepository.findByWhatsappAndCompany(remoteJid, company)
                 .switchIfEmpty(Mono.defer { messageService.askContactName(remoteJid, company, instanceId, whatsChat) })
-                .flatMap { messageService.verifyMessageCategory(it, whatsChat.apply { protocol = it.protocol }) }
+                .flatMap { messageService.verifyMessageCategory(it, whatsChat.apply {
+                    protocol = it.protocol
+                    category = it.category
+                }) }
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, 0)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
         }

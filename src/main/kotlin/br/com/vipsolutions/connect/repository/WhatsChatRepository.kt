@@ -13,6 +13,8 @@ interface WhatsChatRepository: ReactiveCrudRepository<WhatsChat, String> {
 
     fun findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(remoteJid: String, company: Long): Flux<WhatsChat>
 
+    fun findTop500ByRemoteJidAndCompanyAndCategoryInOrderByDatetimeDesc(remoteJid: String, company: Long, categories: List<Long>): Flux<WhatsChat>
+
     fun findAllByProtocolOrderByDatetimeDesc(protocol: Long): Flux<WhatsChat>
 
     fun findByMessageIdAndCompany(messageId: String, company: Long): Mono<WhatsChat>
