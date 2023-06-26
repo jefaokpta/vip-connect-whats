@@ -12,7 +12,6 @@ import br.com.vipsolutions.connect.repository.WhatsChatRepository
 import br.com.vipsolutions.connect.service.GroupService
 import br.com.vipsolutions.connect.service.WsChatHandlerService
 import br.com.vipsolutions.connect.util.*
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.WebSocketHandler
@@ -42,10 +41,7 @@ class WsChatHandler(
     )
 
     private fun handleAgentActions(webSocketMessage: WebSocketMessage, webSocketSession: WebSocketSession): Mono<WebSocketMessage>{
-        println(webSocketMessage.payloadAsText) // todo: apagar
-//        val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
-        val agentActionWs = jacksonObjectMapper().readValue(webSocketMessage.payloadAsText, AgentActionWs::class.java)
-        println(agentActionWs) // todo: apagar
+        val agentActionWs = Gson().fromJson(webSocketMessage.payloadAsText, AgentActionWs::class.java)
 
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
