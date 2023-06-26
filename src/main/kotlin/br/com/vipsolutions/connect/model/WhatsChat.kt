@@ -28,6 +28,8 @@ data class WhatsChat(
     var mediaPageCount: Int? = null,
     var protocol: Long? = null,
     var category: Long? = null,
+    var quotedId: String? = null,
+    var quotedMessage: String? = null,
 ): Persistable<String> {
     @Transient
     var isPersistable: Boolean = true

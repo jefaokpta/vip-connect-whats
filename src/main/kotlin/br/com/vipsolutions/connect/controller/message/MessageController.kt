@@ -71,6 +71,12 @@ class MessageController(
             jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage")["text"]?:
             jsonObject["error"]
             whatsChat.text = textJson.asString
+            whatsChat.quotedId = jsonObject.getAsJsonObject("message")
+                .getAsJsonObject("extendedTextMessage")
+                .getAsJsonObject("contextInfo")["stanzaId"].asString
+            whatsChat.quotedMessage = jsonObject.getAsJsonObject("message")
+                .getAsJsonObject("extendedTextMessage")
+                .getAsJsonObject("contextInfo")["quotedMessage"].asString
         }
 
 
