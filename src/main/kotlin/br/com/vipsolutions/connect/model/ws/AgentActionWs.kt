@@ -8,7 +8,7 @@ import br.com.vipsolutions.connect.model.dto.GroupDTO
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
  * Date: 2021-06-03
  */
-class AgentActionWs(
+data class AgentActionWs(
     var action: String,
     val agent: Int,
     val controlNumber: Long,
