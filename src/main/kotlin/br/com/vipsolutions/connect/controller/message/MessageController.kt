@@ -76,7 +76,7 @@ class MessageController(
                 .getAsJsonObject("contextInfo")["stanzaId"].asString
             whatsChat.quotedMessage = jsonObject.getAsJsonObject("message")
                 .getAsJsonObject("extendedTextMessage")
-                .getAsJsonObject("contextInfo")["quotedMessage"].asString
+                .getAsJsonObject("contextInfo")["quotedMessage"].asString.substring(0, 245)
         }
 
 
