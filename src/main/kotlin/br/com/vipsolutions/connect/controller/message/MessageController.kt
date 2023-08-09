@@ -71,14 +71,15 @@ class MessageController(
             jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage")["text"]?:
             jsonObject["error"]
             whatsChat.text = textJson.asString
-            Optional.ofNullable(jsonObject.getAsJsonObject("message")
-                .getAsJsonObject("extendedTextMessage")
-                .getAsJsonObject("contextInfo"))
-                .ifPresent { quote ->
-                    whatsChat.quotedId = quote["stanzaId"].asString ?: null
-                    whatsChat.quotedMessage = quote.getAsJsonObject("quotedMessage")["conversation"].asString ?: null
-                    if (whatsChat.quotedMessage != null && whatsChat.quotedMessage!!.length > 245){
-                        whatsChat.quotedMessage = whatsChat.quotedMessage!!.substring(0, 245)
+            Optional.ofNullable(jsonObject.getAsJsonObject("message").getAsJsonObject("extendedTextMessage"))
+                .ifPresent { extendedText ->
+                    Optional.ofNullable(extendedText.getAsJsonObject("contextInfo"))
+                        .ifPresent { contextInfo ->
+                            whatsChat.quotedId = contextInfo["stanzaId"].asString ?: null
+                            whatsChat.quotedMessage = contextInfo.getAsJsonObject("quotedMessage")["conversation"].asString ?: null
+                            if (whatsChat.quotedMessage != null && whatsChat.quotedMessage!!.length > 245){
+                                whatsChat.quotedMessage = whatsChat.quotedMessage!!.substring(0, 245)
+                            }
                     }
                 }
         }
