@@ -74,8 +74,14 @@ class WsChatHandler(
                         }
                 }
 
-            "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
+            "CONTACT_MESSAGES_SEPARATED" -> Optional.ofNullable(agentActionWs.contact)
                 .map { whatsChatRepository.findTop500ByRemoteJidAndCompanyAndCategoryInOrderByDatetimeDesc(it.whatsapp, it.company, agentActionWs.categories) }
+                .orElse(Flux.empty())
+                .collectList()
+                .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
+
+            "CONTACT_MESSAGES" -> Optional.ofNullable(agentActionWs.contact)
+                .map { whatsChatRepository.findTop500ByRemoteJidAndCompanyOrderByDatetimeDesc(it.whatsapp, it.company) }
                 .orElse(Flux.empty())
                 .collectList()
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { messages = it })) }
