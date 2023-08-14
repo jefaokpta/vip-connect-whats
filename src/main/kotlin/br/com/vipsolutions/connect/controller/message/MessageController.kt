@@ -76,10 +76,7 @@ class MessageController(
                     Optional.ofNullable(extendedText.getAsJsonObject("contextInfo"))
                         .ifPresent { contextInfo ->
                             whatsChat.quotedId = contextInfo["stanzaId"].asString ?: null
-                            whatsChat.quotedMessage = contextInfo.getAsJsonObject("quotedMessage")["conversation"].asString ?: null
-                            if (whatsChat.quotedMessage != null && whatsChat.quotedMessage!!.length > 245){
-                                whatsChat.quotedMessage = whatsChat.quotedMessage!!.substring(0, 245)
-                            }
+                            whatsChat.quotedMessage = quotedMessageTextOrMediaMimetype(contextInfo)
                     }
                 }
         }
@@ -111,6 +108,24 @@ class MessageController(
                 .switchIfEmpty(Mono.just(Contact(0, "", "", 0, 0, 0)))
                 .flatMap { whatsChatRepository.save(whatsChat) }
         }
+    }
+
+    private fun quotedMessageTextOrMediaMimetype(contextInfo: JsonObject): String? {
+        if(contextInfo.has("quotedMessage") && contextInfo.getAsJsonObject("quotedMessage").has("conversation")){
+            var text = contextInfo.getAsJsonObject("quotedMessage")["conversation"].asString
+            if (text.length > 245){
+                text = text.substring(0, 245)
+            }
+            return text
+        }
+        return Optional.ofNullable(contextInfo.getAsJsonObject("quotedMessage"))
+            .map { quotedMessage ->
+                if (quotedMessage.has("imageMessage")) "mimetype:${quotedMessage.getAsJsonObject("imageMessage")["mimetype"].asString}"
+                else if (quotedMessage.has("videoMessage")) "mimetype:${quotedMessage.getAsJsonObject("videoMessage")["mimetype"].asString}"
+                else if (quotedMessage.has("audioMessage")) "mimetype:${quotedMessage.getAsJsonObject("audioMessage")["mimetype"].asString}"
+                else if (quotedMessage.has("documentMessage")) "mimetype:${quotedMessage.getAsJsonObject("documentMessage")["mimetype"].asString}"
+                else null
+            }.orElse(null)
     }
 
     @PostMapping("/status/update")
