@@ -75,7 +75,7 @@ class MessageController(
                 .ifPresent { extendedText ->
                     Optional.ofNullable(extendedText.getAsJsonObject("contextInfo"))
                         .ifPresent { contextInfo ->
-                            whatsChat.quotedId = contextInfo["stanzaId"].asString ?: null
+                            whatsChat.quotedId = contextInfo["stanzaId"]?.asString
                             whatsChat.quotedMessage = quotedMessageTextOrMediaMimetype(contextInfo)
                     }
                 }
