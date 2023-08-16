@@ -49,7 +49,6 @@ class WsChatHandler(
                 .map { company -> contactRepository.findTop300ByCompanyOrderByLastMessageTimeDesc(company.id) }
                 .flatMap { it.collectList() }
                 .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
-//                .map { contacts -> contacts.filter { !it.fromAgent }} // DESATIVADO PRA VER ONDE QUEBRA
                 .map (ContactCenter::contactsHaveNewMessages)
                 .map { SessionCentral.verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
