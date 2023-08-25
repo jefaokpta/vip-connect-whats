@@ -18,6 +18,8 @@ import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 /**
  * @author Jefferson Alves Reis (jefaokpta) < jefaokpta@hotmail.com >
@@ -143,7 +145,11 @@ class MessageService(
             return prepareContactToSave(remoteJid, company, instanceId, whatsChat.text)
         } else {
             WaitContactNameCenter.names[remoteJid] = ""
-            sendTextMessage(remoteJid, greeting.greet, instanceId)
+            CompletableFuture.runAsync {
+                println("ROBOT ASK CONTACT NAME DELAY")
+                TimeUnit.SECONDS.sleep(15)
+                sendTextMessage(remoteJid, greeting.greet, instanceId)
+            }
         }
         return Mono.empty()
     }
@@ -154,7 +160,12 @@ class MessageService(
             return uraWithoutOptions(contact, stringBuilder, whatsChat)
         }
         ura.options.forEach { stringBuilder.append("\n ${it.option} - ${it.department}") }
-        sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+
+        CompletableFuture.runAsync {
+            println("ROBOT ASK URA DELAY")
+            TimeUnit.SECONDS.sleep(15)
+            sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+        }
         return Mono.just(contact)
     }
 
@@ -162,7 +173,11 @@ class MessageService(
         AnsweringUraCenter.removeUraAnswer(contact)
         contact.category = 0
         contact.lastCategory = 0
-        sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+        CompletableFuture.runAsync {
+            println("ROBOT ASK URA NO OPTIONS DELAY")
+            TimeUnit.SECONDS.sleep(15)
+            sendTextMessage(contact.whatsapp, stringBuilder.toString(), contact.instanceId)
+        }
         return categorizedContact(contact, whatsChat)
     }
 
