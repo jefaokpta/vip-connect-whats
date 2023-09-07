@@ -63,28 +63,35 @@ class SessionCentral {
             .map { Flux.fromIterable(it.values) }
             .orElse(Flux.empty())
             .flatMap {
-                it.session.send(
-                    Mono.just(
-                        it.session.textMessage(
-                            objectToJson(
-                                AgentActionWs(
-                                    action,
-                                    0,
-                                    0,
-                                    null,
-                                    null,
-                                    contact,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
-                                    null,
+                try {
+                    println("👁 ENVIANDO BROADCAST PRA AGENTES ${it.session.id}")
+                    it.session.send(
+                        Mono.just(
+                            it.session.textMessage(
+                                objectToJson(
+                                    AgentActionWs(
+                                        action,
+                                        0,
+                                        0,
+                                        null,
+                                        null,
+                                        contact,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                    )
                                 )
                             )
                         )
                     )
-                )
+                }
+                catch (ex: Exception){
+                    println("🧨 DEU RUIM AO ENVIAR BROADCAST PRA AGENTES ${it.session.id} - ${ex.message}")
+                    Flux.empty()
+                }
             }
 
         fun clearNewMessageToAgents(contact: Contact): Flux<Void> {
@@ -169,28 +176,34 @@ class SessionCentral {
                     }
                     .orElse(Flux.empty())
                     .flatMap {
-                        it.session.send(
-                            Mono.just(
-                                it.session.textMessage(
-                                    objectToJson(
-                                        AgentActionWs(
-                                            "NEW_MESSAGE",
-                                            0,
-                                            0,
-                                            null,
-                                            null,
-                                            contact,
-                                            null,
-                                            null,
-                                            null,
-                                            null,
-                                            null,
-                                            null
+                        try{
+                            println("👁 ENVIANDO ALERTA DE NOVA MENSAGEM PRA AGENTES ${it.session.id}")
+                            it.session.send(
+                                Mono.just(
+                                    it.session.textMessage(
+                                        objectToJson(
+                                            AgentActionWs(
+                                                "NEW_MESSAGE",
+                                                0,
+                                                0,
+                                                null,
+                                                null,
+                                                contact,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            )
                                         )
                                     )
                                 )
                             )
-                        )
+                        } catch (ex: Exception){
+                            println("🧨 DEU RUIM AO ENVIAR ALERTA DE NOVA MENSAGEM PRA AGENTES ${it.session.id} - ${ex.message}")
+                            Flux.empty()
+                        }
                     }
 
             }
