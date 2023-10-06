@@ -46,9 +46,8 @@ class WsChatHandler(
         return when(agentActionWs.action){
             "ONLINE" -> companyRepository.findByControlNumber(agentActionWs.controlNumber)
                 .map { SessionCentral.addAgentSession(it, agentActionWs, webSocketSession)  }
-                .map { company -> contactRepository.findTop300ByCompanyOrderByLastMessageTimeDesc(company.id) }
+                .map { company -> contactRepository.findTop300ByCompanyAndCategoryInOrderByLastMessageTimeDesc(company.id, agentActionWs.categories) }
                 .flatMap { it.collectList() }
-                .map { contacts -> contacts.filter { agentActionWs.categories.contains(it.category) } }
                 .map (ContactCenter::contactsHaveNewMessages)
                 .map { SessionCentral.verifyLockedContacts(it) }
                 .map { webSocketSession.textMessage(objectToJson(agentActionWs.apply { contacts = it })) }
