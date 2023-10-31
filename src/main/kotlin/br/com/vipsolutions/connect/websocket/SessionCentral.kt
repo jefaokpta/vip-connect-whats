@@ -12,12 +12,13 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
 class SessionCentral {
 
     companion object {
-        private val agents = mutableMapOf<Long, MutableMap<Int, AgentSession>>()
+        private val agents = ConcurrentHashMap<Long, MutableMap<Int, AgentSession>>()
         fun getAllByCompanyId(companyId: Long): Map<Int, AgentSession>? {
             return agents[companyId]
         }
@@ -40,6 +41,7 @@ class SessionCentral {
             return contactsAndId.contacts
         }
 
+        @Synchronized
         fun unlockContact(contact: Contact, agent: Int): Flux<Void> {
             val agentSession = agents[contact.company]?.get(agent) ?: return Flux.empty()
             if (agentSession.contact !== null) {
@@ -52,6 +54,7 @@ class SessionCentral {
         }
 
 
+        @Synchronized
         fun lockContact(contact: Contact, agent: Int): Flux<Void> {
             val agentSession = agents[contact.company]?.get(agent) ?: return Flux.empty()
             agentSession.contact = contact
@@ -98,6 +101,7 @@ class SessionCentral {
             return broadcastToAgents(contact.apply { newMessage = false; newMessageQtde = 0 }, "CONTACT_READED")
         }
 
+        @Synchronized
         fun addAgentSession(company: Company, actionWs: AgentActionWs, webSocketSession: WebSocketSession): Company {
             if (agents.contains(company.id)) {
                 agents[company.id]!![actionWs.agent] = AgentSession(webSocketSession, null, actionWs.categories)
@@ -108,6 +112,7 @@ class SessionCentral {
             return company
         }
 
+        @Synchronized
         fun removeAgentSession(session: WebSocketSession) {
             val agentsMap = HashMap(agents)
             agentsMap.forEach { companyMap ->
@@ -160,6 +165,7 @@ class SessionCentral {
             return contact
         }
 
+        @Synchronized
         private fun forceUnlockContactByContact(contact: Contact) {
             agents[contact.company]?.forEach { agent ->
                 if (agent.value.contact?.id == contact.id) {
