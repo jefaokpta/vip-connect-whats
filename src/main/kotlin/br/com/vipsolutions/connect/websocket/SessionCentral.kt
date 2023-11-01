@@ -12,13 +12,12 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
 class SessionCentral {
 
     companion object {
-        private val agents = ConcurrentHashMap<Long, MutableMap<Int, AgentSession>>()
+        private val agents = mutableMapOf<Long, MutableMap<Int, AgentSession>>()
         fun getAllByCompanyId(companyId: Long): Map<Int, AgentSession>? {
             return agents[companyId]
         }
